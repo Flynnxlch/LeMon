@@ -12,8 +12,7 @@ dist
 dist-ssr
 *.local
 docs
-prisma
-
+.gitignore
 # Environment and secrets (do not commit)
 .env
 .env.*

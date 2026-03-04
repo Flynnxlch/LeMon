@@ -1,0 +1,230 @@
+// TrackSTU Backend - Prisma Schema
+// PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      String   // "Admin Pusat" | "Admin Cabang"
+  branchId  String?
+  nip       String?
+  phone     String?
+  status    String   @default("Active") // Active | Inactive
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  branch         Branch?   @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  @@index([branchId])
+  @@index([status])
+  transferReqs   TransferRequest[]    @relation("RequestedBy")
+  reassignReqs   ReassignmentRequest[] @relation("RequestedBy")
+  assetReqs      AssetRequest[]      @relation("RequestedBy")
+  passwordResets PasswordResetToken[]
+  passwordChangeReqs PasswordChangeRequest[]
+  processedPasswordChanges PasswordChangeRequest[] @relation("ProcessedPasswordChange")
+}
+
+model Branch {
+  id        String   @id @default(cuid())
+  name      String
+  address   String?
+  city      String?
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users            User[]
+  assets           Asset[]
+  accountRequests  AccountRequest[]
+  transferFrom     TransferRequest[] @relation("FromBranch")
+  transferTo      TransferRequest[] @relation("ToBranch")
+  assetRequests   AssetRequest[]
+}
+
+model Asset {
+  id           String    @id @default(cuid())
+  serialNumber String
+  type         String
+  brand        String
+  model        String
+  detail       String?
+  branchId     String
+  status       String    @default("Available") // Available | Perlu Diupdate | Diperbaiki | Rusak | Hilang
+  photoUrl     String?
+  updateImages Json?    // array of image URLs (last assign/update photos, 1-4)
+  latitude     Float?
+  longitude    Float?
+  dueUpdate    DateTime? // next update due date
+  deletedAt    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  branch               Branch               @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  assignments          AssetAssignment[]
+  transferRequests     TransferRequest[]
+  reassignmentRequests ReassignmentRequest[]
+
+  @@index([branchId])
+  @@index([deletedAt])
+  @@index([status])
+}
+
+model AssetAssignment {
+  id            String    @id @default(cuid())
+  assetId       String
+  holderFullName String
+  holderNip     String?
+  holderBranchCode String?
+  holderDivision  String?
+  holderEmail   String?
+  holderPhone   String?
+  assignedAt    DateTime  @default(now())
+  dueUpdate     DateTime?
+  latitude      Float?
+  longitude     Float?
+  address       String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  asset     Asset  @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@index([assetId, assignedAt])
+}
+
+model TransferRequest {
+  id          String   @id @default(cuid())
+  assetId     String
+  fromBranchId String
+  toBranchId  String
+  notes       String
+  requestedById String
+  status      String   @default("Pending") // Pending | Approved | Rejected
+  requestDate DateTime @default(now())
+  processedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  asset       Asset  @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  fromBranch  Branch @relation("FromBranch", fields: [fromBranchId], references: [id], onDelete: Restrict)
+  toBranch    Branch @relation("ToBranch", fields: [toBranchId], references: [id], onDelete: Restrict)
+  requestedBy User   @relation("RequestedBy", fields: [requestedById], references: [id], onDelete: Restrict)
+
+  @@index([status])
+  @@index([assetId])
+  @@index([fromBranchId])
+  @@index([toBranchId])
+}
+
+model ReassignmentRequest {
+  id            String   @id @default(cuid())
+  assetId       String
+  newHolderFullName String
+  newHolderNip  String?
+  newHolderBranchCode String?
+  newHolderDivision  String?
+  newHolderEmail String?
+  newHolderPhone String?
+  notes         String?
+  requestedById String
+  status        String   @default("Pending")
+  requestDate   DateTime @default(now())
+  processedAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  asset       Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  requestedBy User  @relation("RequestedBy", fields: [requestedById], references: [id], onDelete: Restrict)
+
+  @@index([status])
+  @@index([assetId])
+}
+
+model AccountRequest {
+  id          String   @id @default(cuid())
+  name        String
+  nip         String
+  email       String
+  phone       String
+  branchId    String?  // assigned by Admin Pusat on approve, not at registration
+  role        String   @default("Admin Cabang")
+  passwordHash String  // stored so on approve we can create user with this password
+  status      String   @default("Pending") // Pending | Approved | Rejected
+  requestedAt DateTime @default(now())
+  processedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  branch Branch? @relation(fields: [branchId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+}
+
+model AssetRequest {
+  id           String   @id @default(cuid())
+  serialNumber String
+  type         String
+  brand        String
+  model        String
+  detail       String?
+  branchId     String
+  requestedById String
+  photoUrl     String?
+  status       String   @default("Pending")
+  requestDate  DateTime @default(now())
+  processedAt  DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  branch      Branch @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  requestedBy User   @relation("RequestedBy", fields: [requestedById], references: [id], onDelete: Restrict)
+
+  @@index([status])
+  @@index([branchId])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model PasswordChangeRequest {
+  id             String    @id @default(cuid())
+  userId         String
+  newPasswordHash String
+  status         String    @default("Pending") // Pending | Approved | Rejected
+  requestedAt    DateTime  @default(now())
+  processedAt    DateTime?
+  processedById   String?
+
+  user      User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  processedBy User? @relation("ProcessedPasswordChange", fields: [processedById], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([status])
+}
+
+model AppSetting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String // stored as string; app interprets (e.g. number for defaultUpdateIntervalDays)
+  updatedAt DateTime @updatedAt
+}
