@@ -1,26 +1,26 @@
-import { memo, useState, useCallback, useMemo, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { memo, useCallback, useMemo, useRef, useState } from 'react';
 import { HiCheckCircle, HiX } from 'react-icons/hi';
-import MainLayout from '../components/layout/MainLayout/MainLayout';
-import Card from '../components/common/Card/Card';
+import { api } from '../api/client';
 import Button from '../components/common/Button/Button';
+import Card from '../components/common/Card/Card';
+import GeolocationPicker from '../components/common/GeolocationPicker/GeolocationPicker';
 import Input from '../components/common/Input/Input';
 import PhotoUpload from '../components/common/PhotoUpload/PhotoUpload';
-import GeolocationPicker from '../components/common/GeolocationPicker/GeolocationPicker';
 import AssetInventoryTable from '../components/features/AssetInventoryTable/AssetInventoryTable';
+import MainLayout from '../components/layout/MainLayout/MainLayout';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { invalidateData } from '../utils/dataInvalidation';
-import { api } from '../api/client';
 import { useAssets, useSettings } from '../hooks/useQueries';
-import { CONDITION_OPTIONS, addDaysToDate } from '../utils/assetConstants';
+import { addDaysToDate } from '../utils/assetConstants';
+import { invalidateData } from '../utils/dataInvalidation';
 
 function applyDueUpdateStatus(assets) {
   const now = new Date();
   now.setHours(0, 0, 0, 0);
   return (assets || []).map((a) => {
-    if (a.dueUpdate && new Date(a.dueUpdate).getTime() <= now.getTime()) {
-      return { ...a, status: 'Late' };
+    if (a.status === 'Available' && a.dueUpdate && new Date(a.dueUpdate).getTime() <= now.getTime()) {
+      return { ...a, status: 'Perlu Diupdate' };
     }
     return a;
   });
@@ -45,11 +45,11 @@ const AssignAsset = memo(() => {
     holderEmail: '',
     holderPhone: '',
     reassignReason: '',
-    condition: '',
-    conditionNote: '',
   });
   const [photos, setPhotos] = useState([]);
   const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const updateVariantRef = useRef('Available'); // 'Available' | 'Rusak' for update submit
 
   const assetParams = useMemo(() => {
     if (!user?.branch_id) return null;
@@ -69,15 +69,19 @@ const AssignAsset = memo(() => {
     return allAssets.find(asset => asset.id === selectedAssetId);
   }, [allAssets, selectedAssetId]);
 
-  const getAssetActions = useCallback((assetStatus) => {
-    if (assetStatus === 'Available') {
+  const getAssetActions = useCallback((asset) => {
+    const status = asset?.status;
+    const hasHolder = !!asset?.holder;
+    if (status === 'Available' && !hasHolder) {
       return [{ id: 'assign', label: 'Assign' }];
     }
-    if (assetStatus === 'Late' || assetStatus === 'Rented') {
+    if (status === 'Hilang') return [];
+    if ((status === 'Available' && hasHolder) || status === 'Perlu Diupdate' || status === 'Diperbaiki' || status === 'Rusak') {
       return [
         { id: 'reassign', label: 'ReAssign' },
         { id: 'update', label: 'Update' },
-        { id: 'balikkan', label: 'Kembalikan' },
+        { id: 'updateRusak', label: 'Update Rusak' },
+        { id: 'laporkan_hilang', label: 'Laporkan Kehilangan' },
       ];
     }
     return [];
@@ -86,6 +90,7 @@ const AssignAsset = memo(() => {
   const getFormTitle = useCallback(() => {
     if (activeAction === 'assign') return 'Assign Asset';
     if (activeAction === 'reassign') return 'ReAssign Asset';
+    if (activeAction === 'updateRusak') return 'Update Rusak';
     return 'Update Asset';
   }, [activeAction]);
 
@@ -102,8 +107,6 @@ const AssignAsset = memo(() => {
       holderEmail: '',
       holderPhone: '',
       reassignReason: '',
-      condition: '',
-      conditionNote: '',
     });
     setPhotos([]);
     setErrors({});
@@ -114,7 +117,6 @@ const AssignAsset = memo(() => {
     setSelectedAssetId(asset.id);
     setActiveAsset(asset);
     setIsActionMenuOpen(true);
-    
     if (asset) {
       setFormData({
         latitude: asset.latitude || '',
@@ -125,8 +127,6 @@ const AssignAsset = memo(() => {
         holderDivision: asset.holder?.division || '',
         holderEmail: asset.holder?.email || '',
         holderPhone: asset.holder?.phone || '',
-        condition: asset.condition || '',
-        conditionNote: asset.conditionNote || '',
       });
       setPhotos([]);
     }
@@ -141,28 +141,26 @@ const AssignAsset = memo(() => {
   const handleActionSelect = useCallback((actionId) => {
     if (!activeAsset) return;
 
-    if (actionId === 'balikkan') {
+    if (actionId === 'laporkan_hilang') {
+      setIsSubmitting(true);
+      // Status jadi Hilang, dueUpdate di-null; latitude/longitude tetap pakai last known (tidak diubah)
       api.assets
-        .update(activeAsset.id, {
-          status: 'Available',
-          dueUpdate: null,
-          latitude: null,
-          longitude: null,
-          condition: null,
-          conditionNote: null,
-        })
+        .update(activeAsset.id, { status: 'Hilang', dueUpdate: null })
         .then(() => {
           invalidateData('assets');
           refetchAssets();
           setSelectedAssetId('');
           setActiveAsset(null);
           setIsActionMenuOpen(false);
+          toast.success('Status aset telah diubah menjadi Hilang.');
         })
-        .catch((err) => alert(err.message || 'Gagal mengembalikan aset.'));
+        .catch((err) => toast.error(err?.message || 'Gagal melaporkan kehilangan.'))
+        .finally(() => setIsSubmitting(false));
       return;
     }
 
     setActiveAction(actionId);
+    updateVariantRef.current = 'Available';
     setIsActionMenuOpen(false);
     setIsFormModalOpen(true);
     setFormData({
@@ -174,11 +172,9 @@ const AssignAsset = memo(() => {
       holderDivision: activeAsset.holder?.division || '',
       holderEmail: activeAsset.holder?.email || '',
       holderPhone: activeAsset.holder?.phone || '',
-      condition: activeAsset.condition || '',
-      conditionNote: activeAsset.conditionNote || '',
     });
     setErrors({});
-  }, [activeAsset, refetchAssets]);
+  }, [activeAsset, refetchAssets, toast]);
 
   const handleCloseActionMenu = useCallback(() => {
     setIsActionMenuOpen(false);
@@ -187,11 +183,13 @@ const AssignAsset = memo(() => {
   }, []);
 
   const handleCloseFormModal = useCallback(() => {
+    if (isSubmitting) return;
     setIsFormModalOpen(false);
     setSelectedAssetId('');
     setActiveAsset(null);
     resetFormState();
-  }, [resetFormState]);
+    setIsSubmitting(false);
+  }, [resetFormState, isSubmitting]);
 
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
@@ -229,12 +227,11 @@ const AssignAsset = memo(() => {
       newErrors.asset = 'Please select an asset from the table';
     }
 
-    // Location, photos, holder required for assign/reassign/update (non-Available)
     if (!formData.latitude || !formData.longitude) {
-      newErrors.location = 'Location is required for non-available assets';
+      newErrors.location = 'Location is required';
     }
-    if (photos.length < 3) {
-      newErrors.photos = 'Please upload at least 3 photos for verification';
+    if (photos.length < 1 || photos.length > 4) {
+      newErrors.photos = 'Upload 1 sampai 4 foto untuk verifikasi';
     }
     if (!isUpdateAction) {
       if (!formData.holderFullName) {
@@ -261,11 +258,6 @@ const AssignAsset = memo(() => {
         newErrors.reassignReason = 'Alasan reassign minimal 10 karakter';
       }
     }
-    const needsCondition = (activeAction === 'assign' || activeAction === 'update') && photos.length >= 3;
-    if (needsCondition && !formData.condition) {
-      newErrors.condition = 'Pilih kondisi aset setelah mengunggah foto kondisi';
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }, [selectedAssetId, formData, photos, isUpdateAction, activeAction]);
@@ -273,10 +265,10 @@ const AssignAsset = memo(() => {
   const handleSubmit = useCallback((e) => {
     e.preventDefault();
 
-    if (!validate()) {
-      return;
-    }
+    if (!validate()) return;
+    setIsSubmitting(true);
 
+    // Due Update mengikuti rule Admin Pusat (Reminder Settings: defaultUpdateIntervalDays)
     const intervalDays = globalUpdateIntervalDays || 7;
     const now = new Date();
     const dueUpdate = addDaysToDate(now, intervalDays);
@@ -303,7 +295,8 @@ const AssignAsset = memo(() => {
           resetFormState();
           refetchAssets();
         })
-        .catch((err) => toast.error(err.message || 'Gagal mengirim permintaan reassignment.'));
+        .catch((err) => toast.error(err.message || 'Gagal mengirim permintaan reassignment.'))
+        .finally(() => setIsSubmitting(false));
       return;
     }
 
@@ -321,8 +314,6 @@ const AssignAsset = memo(() => {
         dueUpdate,
         latitude: lat,
         longitude: lng,
-        condition: formData.condition || 'Bagus',
-        conditionNote: formData.conditionNote?.trim() || undefined,
       };
       const bodyOrFormData =
         photos.length > 0 && photos.every((p) => p.file)
@@ -349,58 +340,52 @@ const AssignAsset = memo(() => {
           resetFormState();
           refetchAssets();
         })
-        .catch((err) => toast.error(err.message || 'Gagal assign aset.'));
+        .catch((err) => toast.error(err.message || 'Gagal assign aset.'))
+        .finally(() => setIsSubmitting(false));
       return;
     }
 
-    if (activeAction === 'update') {
+    if (activeAction === 'update' || activeAction === 'updateRusak') {
+      const newStatus = updateVariantRef.current === 'Rusak' ? 'Rusak' : 'Available';
       const payload = {
-        status: 'Rented',
+        status: newStatus,
         dueUpdate,
         latitude: lat,
         longitude: lng,
-        condition: formData.condition || undefined,
-        conditionNote: formData.conditionNote?.trim() || undefined,
       };
+      const bodyOrFormData =
+        photos.length > 0 && photos.every((p) => p.file)
+          ? (() => {
+              const fd = new FormData();
+              Object.entries(payload).forEach(([k, v]) => {
+                if (v != null && v !== '') {
+                  const val = v instanceof Date ? v.toISOString() : (typeof v === 'object' ? JSON.stringify(v) : String(v));
+                  fd.append(k, val);
+                }
+              });
+              photos.forEach((p) => p.file && fd.append('photos', p.file));
+              return fd;
+            })()
+          : payload;
       api.assets
-        .update(selectedAsset.id, payload)
-        .then(() => {
-          if (formData.condition) {
-            const conditionPayload = {
-              condition: formData.condition,
-              conditionNote: formData.conditionNote?.trim() || undefined,
-              latitude: lat,
-              longitude: lng,
-            };
-            const bodyOrFormData =
-              photos.length > 0 && photos.every((p) => p.file)
-                ? (() => {
-                    const fd = new FormData();
-                    Object.entries(conditionPayload).forEach(([k, v]) => {
-                      if (v != null && v !== '') {
-                        const val = v instanceof Date ? v.toISOString() : (typeof v === 'object' ? JSON.stringify(v) : String(v));
-                        fd.append(k, val);
-                      }
-                    });
-                    photos.forEach((p) => p.file && fd.append('photos', p.file));
-                    return fd;
-                  })()
-                : conditionPayload;
-            return api.assets.updateCondition(selectedAsset.id, bodyOrFormData);
-          }
-        })
+        .update(selectedAsset.id, bodyOrFormData)
         .then(() => {
           invalidateData('assets');
-          toast.success(`Asset ${selectedAsset.serialNumber} telah di-update. Due Update berikutnya: ${new Date(dueUpdate).toLocaleDateString('id-ID')}.`);
+          toast.success(
+            newStatus === 'Rusak'
+              ? `Asset ${selectedAsset.serialNumber} telah ditandai Rusak.`
+              : `Asset ${selectedAsset.serialNumber} telah di-update. Due Update: ${new Date(dueUpdate).toLocaleDateString('id-ID')}.`
+          );
           setSelectedAssetId('');
           setActiveAsset(null);
           setIsFormModalOpen(false);
           resetFormState();
           refetchAssets();
         })
-        .catch((err) => toast.error(err?.message || 'Gagal update aset.'));
+        .catch((err) => toast.error(err?.message || 'Gagal update aset.'))
+        .finally(() => setIsSubmitting(false));
     }
-  }, [selectedAsset, formData, photos, validate, activeAction, resetFormState, user, refetchAssets, globalUpdateIntervalDays]);
+  }, [selectedAsset, formData, photos, validate, activeAction, resetFormState, refetchAssets, globalUpdateIntervalDays, toast]);
 
   const handleClearHolder = useCallback(() => {
     setFormData(prev => ({
@@ -432,7 +417,7 @@ const AssignAsset = memo(() => {
           assets={allAssets}
           onAssetClick={handleAssetSelect}
           selectedAssetId={selectedAssetId}
-          filterByStatus={['Available', 'Late', 'Rented']}
+          filterByStatus={['Available', 'Perlu Diupdate', 'Diperbaiki', 'Rusak', 'Hilang']}
         />
       </div>
 
@@ -440,8 +425,8 @@ const AssignAsset = memo(() => {
       {isActionMenuOpen && activeAsset && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
-            className="absolute inset-0 bg-black/40"
-            onClick={handleCloseActionMenu}
+            className={`absolute inset-0 bg-black/40 ${isSubmitting ? 'cursor-wait' : ''}`}
+            onClick={isSubmitting ? undefined : handleCloseActionMenu}
           />
           <div className="relative w-full max-w-md bg-white rounded-xl shadow-lg border border-gray-200 p-6">
             <h3 className="text-lg font-semibold text-neutral-900 mb-2">
@@ -451,20 +436,31 @@ const AssignAsset = memo(() => {
               Status saat ini: <span className="font-semibold text-neutral-900">{activeAsset.status}</span>
             </p>
             <div className="space-y-3">
-              {getAssetActions(activeAsset.status).map((action) => (
+              {getAssetActions(activeAsset).map((action) => (
                 <Button
                   key={action.id}
                   type="button"
                   variant="primary"
                   className="w-full justify-center"
+                  disabled={isSubmitting}
                   onClick={() => handleActionSelect(action.id)}
                 >
-                  {action.label}
+                  {isSubmitting ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      Memproses...
+                    </>
+                  ) : (
+                    action.label
+                  )}
                 </Button>
               ))}
             </div>
             <div className="mt-4">
-              <Button type="button" variant="secondary" className="w-full justify-center" onClick={handleCloseActionMenu}>
+              <Button type="button" variant="secondary" className="w-full justify-center" onClick={handleCloseActionMenu} disabled={isSubmitting}>
                 Cancel
               </Button>
             </div>
@@ -476,15 +472,16 @@ const AssignAsset = memo(() => {
       {isFormModalOpen && selectedAssetId && selectedAsset && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
           <div
-            className="absolute inset-0 bg-black/40"
-            onClick={handleCloseFormModal}
+            className={`absolute inset-0 bg-black/40 ${isSubmitting ? 'cursor-wait' : ''}`}
+            onClick={isSubmitting ? undefined : handleCloseFormModal}
           />
           <Card title={getFormTitle()} className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto">
             <div className="absolute top-4 right-4">
               <button
                 type="button"
                 onClick={handleCloseFormModal}
-                className="text-neutral-400 hover:text-neutral-900"
+                disabled={isSubmitting}
+                className="text-neutral-400 hover:text-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed"
                 aria-label="Close form"
               >
                 <HiX className="w-6 h-6" />
@@ -525,57 +522,17 @@ const AssignAsset = memo(() => {
               </div>
             </div>
 
-            {/* Asset Condition Photos - then Kondisi Aset (Update only) */}
-            {(
-              <div className="border-t border-gray-100 pt-6 space-y-4">
-                <PhotoUpload
-                  photos={photos}
-                  onChange={setPhotos}
-                  maxPhotos={4}
-                  label="Asset Condition Photos"
-                  error={errors.photos}
-                />
-                {((activeAction === 'assign' || activeAction === 'update') && photos.length >= 3) && (
-                  <div className="pt-4 border-t border-neutral-100 space-y-4">
-                    <h4 className="text-md font-semibold text-neutral-900">Kondisi Aset</h4>
-                    <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1.5">
-                        Kondisi <span className="text-red-500">*</span>
-                      </label>
-                      <select
-                        name="condition"
-                        value={formData.condition}
-                        onChange={handleChange}
-                        className={`block w-full px-4 py-2.5 border rounded-lg bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 ${
-                          errors.condition ? 'border-red-500' : 'border-neutral-300'
-                        }`}
-                      >
-                        <option value="">Pilih kondisi</option>
-                        {CONDITION_OPTIONS.map((opt) => (
-                          <option key={opt} value={opt}>{opt}</option>
-                        ))}
-                      </select>
-                      {errors.condition && (
-                        <p className="mt-1 text-sm text-red-500">{errors.condition}</p>
-                      )}
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1.5">
-                        Keterangan tambahan (opsional)
-                      </label>
-                      <textarea
-                        name="conditionNote"
-                        value={formData.conditionNote}
-                        onChange={handleChange}
-                        rows={3}
-                        placeholder="Detail atau keterangan tambahan tentang kondisi aset..."
-                        className="block w-full px-4 py-2.5 border border-neutral-300 rounded-lg bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 resize-none"
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
+            {/* Asset photos: min 1, max 4 */}
+            <div className="border-t border-gray-100 pt-6 space-y-4">
+              <PhotoUpload
+                photos={photos}
+                onChange={setPhotos}
+                maxPhotos={4}
+                label="Foto Kondisi Aset"
+                helperText="Upload 1–4 foto untuk verifikasi (min. 1, max. 4)"
+                error={errors.photos}
+              />
+            </div>
 
             {/* Location Picker */}
             {(
@@ -717,13 +674,73 @@ const AssignAsset = memo(() => {
                 type="button"
                 variant="secondary"
                 onClick={handleCloseFormModal}
+                disabled={isSubmitting}
               >
                 Cancel
               </Button>
-              <Button type="submit" variant="primary" className="flex items-center gap-2">
-                <HiCheckCircle className="w-5 h-5" />
-                {getFormTitle()}
-              </Button>
+              {isUpdateAction && (
+                <>
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    className="flex items-center gap-2"
+                    disabled={isSubmitting}
+                    onClick={() => { updateVariantRef.current = 'Rusak'; }}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                        Memproses...
+                      </>
+                    ) : (
+                      'Update Rusak'
+                    )}
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    className="flex items-center gap-2"
+                    disabled={isSubmitting}
+                    onClick={() => { updateVariantRef.current = 'Available'; }}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                        Memproses...
+                      </>
+                    ) : (
+                      <>
+                        <HiCheckCircle className="w-5 h-5" />
+                        Update
+                      </>
+                    )}
+                  </Button>
+                </>
+              )}
+              {!isUpdateAction && (
+                <Button type="submit" variant="primary" className="flex items-center gap-2" disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                      <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      {activeAction === 'assign' ? 'Assigning...' : 'Mengirim...'}
+                    </>
+                  ) : (
+                    <>
+                      <HiCheckCircle className="w-5 h-5" />
+                      {getFormTitle()}
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
           </form>
           </Card>

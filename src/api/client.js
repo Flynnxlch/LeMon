@@ -182,16 +182,6 @@ export const api = {
         body: JSON.stringify(bodyOrFormData),
       });
     },
-    updateCondition: (id, bodyOrFormData) => {
-      if (bodyOrFormData instanceof FormData) {
-        return request(`assets/${id}/condition`, { method: 'PATCH', body: bodyOrFormData });
-      }
-      return request(`assets/${id}/condition`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(bodyOrFormData),
-      });
-    },
   },
   transferRequests: {
     list: (status) =>

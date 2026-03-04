@@ -4,10 +4,7 @@ import Button from '../../common/Button/Button';
 import Card from '../../common/Card/Card';
 import { STATUS_LABELS } from '../../../utils/assetConstants';
 
-const AssetDetailPanel = memo(({ asset, onClose, onTransfer, canTransfer = false, onDelete, canDelete = false, onOpenPastHolders, onOpenConditionHistory }) => {
-  const conditionHistory = asset?.conditionHistory ?? [];
-  const hasConditionHistory = conditionHistory.length > 0;
-
+const AssetDetailPanel = memo(({ asset, onClose, onTransfer, canTransfer = false, onDelete, canDelete = false, onOpenPastHolders }) => {
   if (!asset) return null;
 
   return (
@@ -101,8 +98,11 @@ const AssetDetailPanel = memo(({ asset, onClose, onTransfer, canTransfer = false
               </span>
               <span className={`inline-flex px-3 py-1.5 rounded-full text-sm font-semibold ${
                 asset.status === 'Available' ? 'bg-green-50 text-green-700' :
-                asset.status === 'Rented' ? 'bg-neutral-100 text-neutral-700' :
-                'bg-red-50 text-red-700'
+                asset.status === 'Perlu Diupdate' ? 'bg-amber-50 text-amber-700' :
+                asset.status === 'Diperbaiki' ? 'bg-blue-50 text-blue-700' :
+                asset.status === 'Rusak' ? 'bg-red-50 text-red-700' :
+                asset.status === 'Hilang' ? 'bg-neutral-200 text-neutral-700' :
+                'bg-neutral-100 text-neutral-700'
               }`}>
                 {STATUS_LABELS[asset.status] ?? asset.status}
               </span>
@@ -191,36 +191,6 @@ const AssetDetailPanel = memo(({ asset, onClose, onTransfer, canTransfer = false
             </div>
           ) : (
             <p className="text-neutral-400 italic">Not assigned</p>
-          )}
-        </div>
-
-        {/* Kondisi Aset - summary + link to histori (overlay) */}
-        <div className="border-t border-gray-100 pt-6">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-semibold text-neutral-900">
-              Kondisi Aset
-            </h3>
-            {onOpenConditionHistory && (
-              <button
-                type="button"
-                onClick={onOpenConditionHistory}
-                className="text-sm font-medium text-neutral-600 hover:text-neutral-900 underline transition-colors"
-              >
-                Lihat histori kondisi
-              </button>
-            )}
-          </div>
-          {hasConditionHistory ? (
-            <p className="text-sm text-neutral-500">
-              {conditionHistory.length} entri histori kondisi tercatat.
-              {asset.condition && (
-                <span className="ml-2">
-                  Kondisi terbaru: <span className="font-medium text-neutral-700">{asset.condition}</span>
-                </span>
-              )}
-            </p>
-          ) : (
-            <p className="text-sm text-neutral-500 italic">Belum ada riwayat kondisi.</p>
           )}
         </div>
 

@@ -7,8 +7,10 @@ import { STATUS_LABELS, truncate } from '../../../utils/assetConstants';
 
 const statusClasses = {
   Available: 'bg-green-50 text-green-700',
-  Rented: 'bg-neutral-100 text-neutral-700',
-  Late: 'bg-red-50 text-red-700',
+  'Perlu Diupdate': 'bg-amber-50 text-amber-700',
+  Diperbaiki: 'bg-blue-50 text-blue-700',
+  Rusak: 'bg-red-50 text-red-700',
+  Hilang: 'bg-neutral-200 text-neutral-700',
 };
 
 const StatusBadge = memo(({ status }) => {
@@ -125,9 +127,11 @@ const AssetTable = memo(({ assets: assetsProp = [], loading = false, userRole, b
             aria-label="Filter by status"
           >
             <option value="all">All Status</option>
-            {!excludeAvailable && <option value="Available">Available</option>}
-            <option value="Rented">{STATUS_LABELS.Rented}</option>
-            <option value="Late">{STATUS_LABELS.Late}</option>
+            {!excludeAvailable && <option value="Available">{STATUS_LABELS.Available}</option>}
+            <option value="Perlu Diupdate">{STATUS_LABELS['Perlu Diupdate']}</option>
+            <option value="Diperbaiki">{STATUS_LABELS.Diperbaiki}</option>
+            <option value="Rusak">{STATUS_LABELS.Rusak}</option>
+            <option value="Hilang">{STATUS_LABELS.Hilang}</option>
           </select>
         </div>
       </div>

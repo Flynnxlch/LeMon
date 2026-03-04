@@ -8,7 +8,6 @@ import {
   createAssetSchema,
   updateAssetSchema,
   assignAssetSchema,
-  updateConditionSchema,
   getAssetsQuerySchema,
 } from '../validators/asset.js';
 
@@ -51,7 +50,20 @@ router.post(
   },
   assetController.createAsset
 );
-router.patch('/:id', authMiddleware, validateBody(updateAssetSchema), assetController.updateAsset);
+router.patch(
+  '/:id',
+  authMiddleware,
+  uploadConditionPhotos,
+  validateImageMagicArray,
+  (req, res, next) => {
+    const b = req.body || {};
+    if (b.latitude !== undefined && b.latitude !== '') req.body.latitude = Number(b.latitude);
+    if (b.longitude !== undefined && b.longitude !== '') req.body.longitude = Number(b.longitude);
+    next();
+  },
+  validateBody(updateAssetSchema),
+  assetController.updateAsset
+);
 router.delete('/:id', authMiddleware, requireRole('Admin Pusat'), assetController.deleteAsset);
 
 function coerceAssignBody(req, res, next) {
@@ -60,13 +72,6 @@ function coerceAssignBody(req, res, next) {
   if (b.longitude !== undefined && b.longitude !== '') req.body.longitude = Number(b.longitude);
   next();
 }
-function coerceConditionBody(req, res, next) {
-  const b = req.body || {};
-  if (b.latitude !== undefined && b.latitude !== '') req.body.latitude = Number(b.latitude);
-  if (b.longitude !== undefined && b.longitude !== '') req.body.longitude = Number(b.longitude);
-  next();
-}
-
 router.post(
   '/:id/assign',
   authMiddleware,
@@ -77,15 +82,4 @@ router.post(
   validateBody(assignAssetSchema),
   assetController.assignAsset
 );
-router.patch(
-  '/:id/condition',
-  authMiddleware,
-  requireRole('Admin Pusat', 'Admin Cabang'),
-  uploadConditionPhotos,
-  validateImageMagicArray,
-  coerceConditionBody,
-  validateBody(updateConditionSchema),
-  assetController.updateCondition
-);
-
 export default router;

@@ -15,8 +15,6 @@ function mapReassignmentRequest(rr) {
     currentHolderNip: currentAssignment?.holderNip ?? null,
     currentHolderDivision: currentAssignment?.holderDivision ?? null,
     currentHolderEmail: currentAssignment?.holderEmail ?? null,
-    assetCondition: rr.asset?.condition ?? null,
-    assetConditionNote: rr.asset?.conditionNote ?? null,
     newHolderFullName: rr.newHolderFullName,
     newHolderNip: rr.newHolderNip,
     newHolderBranchCode: rr.newHolderBranchCode,
@@ -119,7 +117,7 @@ export async function approveReassignmentRequest(requestId) {
     }),
     prisma.asset.update({
       where: { id: assetId },
-      data: { status: 'Rented', dueUpdate },
+      data: { status: 'Available', dueUpdate },
     }),
     prisma.reassignmentRequest.update({
       where: { id: requestId },

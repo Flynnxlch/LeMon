@@ -5,7 +5,6 @@ import Button from '../components/common/Button/Button';
 import AddAssetModal from '../components/features/AddAssetModal/AddAssetModal';
 import AssetDetailPanel from '../components/features/AssetDetailPanel/AssetDetailPanel';
 import PastHoldersOverlay from '../components/features/AssetDetailPanel/PastHoldersOverlay';
-import ConditionHistoryOverlay from '../components/features/AssetDetailPanel/ConditionHistoryOverlay';
 import AssetTable from '../components/features/AssetTable/AssetTable';
 import AssetTransferModal from '../components/features/AssetTransferModal/AssetTransferModal';
 import RequestNewAssetModal from '../components/features/RequestNewAssetModal/RequestNewAssetModal';
@@ -27,8 +26,8 @@ function applyDueUpdateStatus(assets) {
   const now = new Date();
   now.setHours(0, 0, 0, 0);
   return (assets || []).map((a) => {
-    if (a.dueUpdate && new Date(a.dueUpdate).getTime() <= now.getTime()) {
-      return { ...a, status: 'Late' };
+    if (a.status === 'Available' && a.dueUpdate && new Date(a.dueUpdate).getTime() <= now.getTime()) {
+      return { ...a, status: 'Perlu Diupdate' };
     }
     return a;
   });
@@ -45,7 +44,6 @@ const Assets = memo(() => {
   const [isRequestNewAssetModalOpen, setIsRequestNewAssetModalOpen] = useState(false);
   const [assetToTransfer, setAssetToTransfer] = useState(null);
   const [showPastHoldersOverlay, setShowPastHoldersOverlay] = useState(false);
-  const [showConditionHistoryOverlay, setShowConditionHistoryOverlay] = useState(false);
 
   const assetParams = useMemo(() => {
     const p = {};
@@ -92,8 +90,6 @@ const Assets = memo(() => {
 
   const openPastHoldersOverlay = useCallback(() => setShowPastHoldersOverlay(true), []);
   const closePastHoldersOverlay = useCallback(() => setShowPastHoldersOverlay(false), []);
-  const openConditionHistoryOverlay = useCallback(() => setShowConditionHistoryOverlay(true), []);
-  const closeConditionHistoryOverlay = useCallback(() => setShowConditionHistoryOverlay(false), []);
 
   const handleOpenAddModal = useCallback(() => {
     if (isAdminCabang) {
@@ -257,7 +253,6 @@ const Assets = memo(() => {
                 onDelete={handleDeleteAsset}
                 canDelete={isAdminPusat}
                 onOpenPastHolders={openPastHoldersOverlay}
-                onOpenConditionHistory={openConditionHistoryOverlay}
               />
             )}
           </div>
@@ -299,12 +294,6 @@ const Assets = memo(() => {
         isOpen={showPastHoldersOverlay}
         onClose={closePastHoldersOverlay}
         pastHolders={selectedAsset?.pastHolders ?? []}
-        assetSerialNumber={selectedAsset?.serialNumber}
-      />
-      <ConditionHistoryOverlay
-        isOpen={showConditionHistoryOverlay}
-        onClose={closeConditionHistoryOverlay}
-        conditionHistory={selectedAsset?.conditionHistory ?? []}
         assetSerialNumber={selectedAsset?.serialNumber}
       />
     </MainLayout>

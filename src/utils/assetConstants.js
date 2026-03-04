@@ -1,11 +1,14 @@
 /** Display labels for asset status (internal value -> UI label) */
 export const STATUS_LABELS = {
   Available: 'Available',
-  Rented: 'Sewa',
-  Late: 'Perlu Diupdate',
+  'Perlu Diupdate': 'Perlu Diupdate',
+  Diperbaiki: 'Diperbaiki',
+  Rusak: 'Rusak',
+  Hilang: 'Hilang',
 };
 
-export const CONDITION_OPTIONS = ['Bagus', 'Rusak', 'Dalam Perbaikan', 'Hilang'];
+/** All status values for filtering/display */
+export const STATUS_OPTIONS = ['Available', 'Perlu Diupdate', 'Diperbaiki', 'Rusak', 'Hilang'];
 
 /** Jangka waktu update: value = days */
 export const UPDATE_INTERVAL_OPTIONS = [

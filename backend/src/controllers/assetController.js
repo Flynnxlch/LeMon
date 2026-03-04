@@ -85,9 +85,16 @@ export async function createAsset(req, res, next) {
 
 export async function updateAsset(req, res, next) {
   try {
+    let payload = { ...req.body };
+    if (req.files && req.files.length > 0) {
+      const urls = await uploadConditionPhotoUrls(req);
+      payload.updateImages = urls;
+    }
+    if (payload.latitude !== undefined) payload.latitude = Number(payload.latitude);
+    if (payload.longitude !== undefined) payload.longitude = Number(payload.longitude);
     const result = await assetService.updateAsset(
       req.params.id,
-      req.body,
+      payload,
       req.user.role,
       req.user.branchId
     );
@@ -126,8 +133,8 @@ export async function assignAsset(req, res, next) {
   try {
     let payload = { ...req.body };
     if (req.files && req.files.length > 0) {
-      const conditionImages = await uploadConditionPhotoUrls(req);
-      payload.conditionImages = conditionImages;
+      const urls = await uploadConditionPhotoUrls(req);
+      payload.updateImages = urls;
     }
     if (payload.latitude !== undefined) payload.latitude = Number(payload.latitude);
     if (payload.longitude !== undefined) payload.longitude = Number(payload.longitude);
@@ -144,33 +151,6 @@ export async function assignAsset(req, res, next) {
       return res.status(404).json({ success: false, error: err.message });
     }
     if (err.message === 'Forbidden' || err.message === 'Only Admin Cabang can assign') {
-      return res.status(403).json({ success: false, error: err.message });
-    }
-    next(err);
-  }
-}
-
-export async function updateCondition(req, res, next) {
-  try {
-    let payload = { ...req.body };
-    if (req.files && req.files.length > 0) {
-      const conditionImages = await uploadConditionPhotoUrls(req);
-      payload.conditionImages = conditionImages;
-    }
-    if (payload.latitude !== undefined) payload.latitude = Number(payload.latitude);
-    if (payload.longitude !== undefined) payload.longitude = Number(payload.longitude);
-    const result = await assetService.updateAssetCondition(
-      req.params.id,
-      payload,
-      req.user.role,
-      req.user.branchId
-    );
-    res.json({ success: true, data: result });
-  } catch (err) {
-    if (err.message === 'Asset not found') {
-      return res.status(404).json({ success: false, error: err.message });
-    }
-    if (err.message === 'Forbidden') {
       return res.status(403).json({ success: false, error: err.message });
     }
     next(err);

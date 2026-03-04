@@ -47,7 +47,7 @@ function buildNotifications(assets, readIds) {
   const now = startOfToday();
   const list = [];
   assets.forEach((asset) => {
-    if (asset.status !== 'Late' || !asset.dueUpdate) return;
+    if (asset.status !== 'Perlu Diupdate' || !asset.dueUpdate) return;
     const dueUpdate = asset.dueUpdate;
     const reminderTimes = getReminderDates(dueUpdate);
     reminderTimes.forEach((t) => {
@@ -74,8 +74,8 @@ function applyDueUpdateStatus(assets) {
   const now = new Date();
   now.setHours(0, 0, 0, 0);
   return (assets || []).map((a) => {
-    if (a.dueUpdate && new Date(a.dueUpdate).getTime() <= now.getTime()) {
-      return { ...a, status: 'Late' };
+    if (a.status === 'Available' && a.dueUpdate && new Date(a.dueUpdate).getTime() <= now.getTime()) {
+      return { ...a, status: 'Perlu Diupdate' };
     }
     return a;
   });

@@ -1,7 +1,6 @@
 import { z } from 'zod';
 
-const conditionOptions = ['Bagus', 'Rusak', 'Dalam Perbaikan', 'Hilang'];
-const statusOptions = ['Available', 'Rented', 'Late'];
+const statusOptions = ['Available', 'Perlu Diupdate', 'Diperbaiki', 'Rusak', 'Hilang'];
 
 export const createAssetSchema = z.object({
   serialNumber: z.string().min(1).max(100),
@@ -20,11 +19,10 @@ export const updateAssetSchema = z.object({
   detail: z.string().max(1000).optional(),
   branchId: z.string().min(1).optional(),
   status: z.enum(statusOptions).optional(),
-  condition: z.enum(conditionOptions).optional().nullable(),
-  conditionNote: z.string().max(1000).optional().nullable(),
   latitude: z.number().optional().nullable(),
   longitude: z.number().optional().nullable(),
   dueUpdate: z.string().datetime().optional().nullable(),
+  updateImages: z.array(z.string().url()).optional().nullable(),
 }).strict();
 
 export const assignAssetSchema = z.object({
@@ -38,17 +36,13 @@ export const assignAssetSchema = z.object({
   latitude: z.number().optional(),
   longitude: z.number().optional(),
   address: z.string().max(500).optional(),
-  condition: z.enum(conditionOptions),
-  conditionNote: z.string().max(1000).optional(),
-  conditionImages: z.array(z.string().url()).optional(),
+  updateImages: z.array(z.string().url()).min(1).max(4).optional(),
 }).strict();
 
-export const updateConditionSchema = z.object({
-  condition: z.enum(conditionOptions),
-  conditionNote: z.string().max(1000).optional(),
+export const updateAssetPhotosSchema = z.object({
   latitude: z.number().optional(),
   longitude: z.number().optional(),
-  conditionImages: z.array(z.string().url()).optional(),
+  updateImages: z.array(z.string().url()).min(1).max(4).optional(),
 }).strict();
 
 export const getAssetsQuerySchema = z.object({

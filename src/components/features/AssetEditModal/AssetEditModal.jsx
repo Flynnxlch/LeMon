@@ -4,7 +4,7 @@ import Button from '../../common/Button/Button';
 import Input from '../../common/Input/Input';
 import PhotoUpload from '../../common/PhotoUpload/PhotoUpload';
 import GeolocationPicker from '../../common/GeolocationPicker/GeolocationPicker';
-import { CONDITION_OPTIONS } from '../../../utils/assetConstants';
+import { STATUS_OPTIONS } from '../../../utils/assetConstants';
 
 const AssetEditModal = memo(({ isOpen, onClose, onSubmit, asset }) => {
   const [formData, setFormData] = useState({
@@ -17,8 +17,6 @@ const AssetEditModal = memo(({ isOpen, onClose, onSubmit, asset }) => {
     holderDivision: '',
     holderEmail: '',
     holderPhone: '',
-    condition: '',
-    conditionNote: '',
   });
   const [photos, setPhotos] = useState([]);
   const [errors, setErrors] = useState({});
@@ -89,8 +87,8 @@ const AssetEditModal = memo(({ isOpen, onClose, onSubmit, asset }) => {
       if (!formData.longitude) {
         newErrors.longitude = 'Longitude is required for non-available assets';
       }
-      if (photos.length < 3) {
-        newErrors.photos = 'Please upload at least 3 photos for verification';
+      if (photos.length < 1 || photos.length > 4) {
+        newErrors.photos = 'Upload 1 sampai 4 foto untuk verifikasi';
       }
       if (!formData.holderFullName) {
         newErrors.holderFullName = 'Holder name is required for non-available assets';
@@ -111,9 +109,6 @@ const AssetEditModal = memo(({ isOpen, onClose, onSubmit, asset }) => {
       }
       if (!formData.holderPhone) {
         newErrors.holderPhone = 'Phone is required for non-available assets';
-      }
-      if (photos.length >= 3 && !formData.condition) {
-        newErrors.condition = 'Pilih kondisi aset setelah mengunggah foto kondisi';
       }
     }
 
@@ -139,33 +134,11 @@ const AssetEditModal = memo(({ isOpen, onClose, onSubmit, asset }) => {
         }
       : null;
 
-    const photoPreviews = photos.map((p) => (typeof p.preview === 'string' ? p.preview : p.preview));
-    const existingHistory = asset.conditionHistory || [];
-    const newConditionEntry =
-      photos.length >= 3 && formData.condition
-        ? {
-            id: `cond-${Date.now()}`,
-            updatedAt: new Date().toISOString(),
-            holder: newHolder,
-            condition: formData.condition,
-            conditionNote: formData.conditionNote?.trim() || '',
-            conditionImages: photoPreviews,
-          }
-        : null;
-    const conditionHistory = newConditionEntry
-      ? [newConditionEntry, ...existingHistory]
-      : existingHistory;
-    const latestCondition = conditionHistory[0] || null;
-
     const updatedAsset = {
       ...asset,
       status: formData.status,
       latitude: formData.latitude ? parseFloat(formData.latitude) : null,
       longitude: formData.longitude ? parseFloat(formData.longitude) : null,
-      conditionHistory,
-      condition: latestCondition?.condition ?? asset.condition ?? null,
-      conditionNote: latestCondition?.conditionNote ?? asset.conditionNote ?? null,
-      conditionImages: latestCondition?.conditionImages ?? asset.conditionImages ?? [],
       photos: photos.map((p) => ({
         id: p.id,
         preview: p.preview,
@@ -234,65 +207,26 @@ const AssetEditModal = memo(({ isOpen, onClose, onSubmit, asset }) => {
                     errors.status ? 'border-red-500' : 'border-neutral-300'
                   }`}
                 >
-                  <option value="">Select Status</option>
-                  <option value="Available">Available</option>
-                  <option value="Rented">Sewa</option>
-                  <option value="Late">Perlu Diupdate</option>
+                  <option value="">Pilih Status</option>
+                  {STATUS_OPTIONS.map((opt) => (
+                    <option key={opt} value={opt}>{opt}</option>
+                  ))}
                 </select>
                 {errors.status && (
                   <p className="mt-1 text-sm text-red-500">{errors.status}</p>
                 )}
               </div>
 
-              {/* Asset Condition Photos - Required first; then Kondisi dropdown + note appear */}
               {formData.status !== 'Available' && formData.status && (
                 <div className="border-t border-gray-100 pt-6 space-y-4">
                   <PhotoUpload
                     photos={photos}
                     onChange={setPhotos}
                     maxPhotos={4}
-                    label="Asset Condition Photos"
+                    label="Foto Kondisi Aset (1–4)"
+                    helperText="Upload 1–4 foto untuk verifikasi"
                     error={errors.photos}
                   />
-                  {photos.length >= 3 && (
-                    <div className="pt-4 border-t border-neutral-100 space-y-4 animate-fade-in">
-                      <h4 className="text-md font-semibold text-neutral-900">Kondisi Aset</h4>
-                      <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-1.5">
-                          Kondisi <span className="text-red-500">*</span>
-                        </label>
-                        <select
-                          name="condition"
-                          value={formData.condition}
-                          onChange={handleChange}
-                          className={`block w-full px-4 py-2.5 border rounded-lg bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 ${
-                            errors.condition ? 'border-red-500' : 'border-neutral-300'
-                          }`}
-                        >
-                          <option value="">Pilih kondisi</option>
-                          {CONDITION_OPTIONS.map((opt) => (
-                            <option key={opt} value={opt}>{opt}</option>
-                          ))}
-                        </select>
-                        {errors.condition && (
-                          <p className="mt-1 text-sm text-red-500">{errors.condition}</p>
-                        )}
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-1.5">
-                          Keterangan tambahan (opsional)
-                        </label>
-                        <textarea
-                          name="conditionNote"
-                          value={formData.conditionNote}
-                          onChange={handleChange}
-                          rows={3}
-                          placeholder="Detail atau keterangan tambahan tentang kondisi aset..."
-                          className="block w-full px-4 py-2.5 border border-neutral-300 rounded-lg bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 resize-none"
-                        />
-                      </div>
-                    </div>
-                  )}
                 </div>
               )}
 

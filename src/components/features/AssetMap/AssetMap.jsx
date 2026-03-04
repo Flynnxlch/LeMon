@@ -67,14 +67,17 @@ L.Icon.Default.mergeOptions({
 // Custom marker icons for different statuses
 const createCustomIcon = (status) => {
   const colors = {
-    Rented: '#171717',
-    Late: '#dc2626'
+    Available: '#22c55e',
+    'Perlu Diupdate': '#f59e0b',
+    Diperbaiki: '#3b82f6',
+    Rusak: '#dc2626',
+    Hilang: '#737373',
   };
 
   return L.divIcon({
     html: `
       <div style="
-        background-color: ${colors[status] || colors.Rented};
+        background-color: ${colors[status] || colors.Available};
         width: 24px;
         height: 24px;
         border-radius: 50% 50% 50% 0;
@@ -132,10 +135,10 @@ const AssetMap = memo(({ assets = [], selectedAsset, onClearSelection, branchNam
   const [selectedAssetWithAddress, setSelectedAssetWithAddress] = useState(null);
   const [isLoadingAddress, setIsLoadingAddress] = useState(false);
 
-  // Filter out Available assets (no geolocation) and those without coordinates
+  // Only show assets that have coordinates
   const allAssets = useMemo(() => {
     return (assets || []).filter(
-      (asset) => asset.status !== 'Available' && asset.latitude != null && asset.longitude != null
+      (asset) => asset.latitude != null && asset.longitude != null
     );
   }, [assets]);
 
@@ -237,8 +240,11 @@ const AssetMap = memo(({ assets = [], selectedAsset, onClearSelection, branchNam
             aria-label="Filter assets by status"
           >
             <option value="all">All ({allAssets.length})</option>
-            <option value="Rented">{STATUS_LABELS.Rented} ({allAssets.filter(a => a.status === 'Rented').length})</option>
-            <option value="Late">{STATUS_LABELS.Late} ({allAssets.filter(a => a.status === 'Late').length})</option>
+            <option value="Available">{STATUS_LABELS.Available} ({allAssets.filter(a => a.status === 'Available').length})</option>
+            <option value="Perlu Diupdate">{STATUS_LABELS['Perlu Diupdate']} ({allAssets.filter(a => a.status === 'Perlu Diupdate').length})</option>
+            <option value="Diperbaiki">{STATUS_LABELS.Diperbaiki} ({allAssets.filter(a => a.status === 'Diperbaiki').length})</option>
+            <option value="Rusak">{STATUS_LABELS.Rusak} ({allAssets.filter(a => a.status === 'Rusak').length})</option>
+            <option value="Hilang">{STATUS_LABELS.Hilang} ({allAssets.filter(a => a.status === 'Hilang').length})</option>
           </select>
         </div>
 
@@ -246,11 +252,11 @@ const AssetMap = memo(({ assets = [], selectedAsset, onClearSelection, branchNam
         <div className="flex items-center gap-4 text-xs">
           <div className="flex items-center gap-1.5">
             <div className="w-2.5 h-2.5 bg-neutral-900 rounded-full"></div>
-            <span className="text-neutral-500">{STATUS_LABELS.Rented}</span>
+            <span className="text-neutral-500">{STATUS_LABELS.Available}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="w-2.5 h-2.5 bg-red-500 rounded-full"></div>
-            <span className="text-neutral-500">{STATUS_LABELS.Late}</span>
+            <span className="text-neutral-500">{STATUS_LABELS['Perlu Diupdate']}</span>
           </div>
         </div>
       </div>
@@ -324,8 +330,11 @@ const AssetMap = memo(({ assets = [], selectedAsset, onClearSelection, branchNam
                     <div className="flex items-center gap-2">
                       <span className="text-neutral-500 font-medium min-w-[80px]">Status:</span>
                       <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        asset.status === 'Rented' ? 'bg-neutral-100 text-neutral-700' :
-                        asset.status === 'Late' ? 'bg-red-50 text-red-700' :
+                        asset.status === 'Available' ? 'bg-green-50 text-green-700' :
+                        asset.status === 'Perlu Diupdate' ? 'bg-amber-50 text-amber-700' :
+                        asset.status === 'Diperbaiki' ? 'bg-blue-50 text-blue-700' :
+                        asset.status === 'Rusak' ? 'bg-red-50 text-red-700' :
+                        asset.status === 'Hilang' ? 'bg-neutral-200 text-neutral-700' :
                         'bg-neutral-100 text-neutral-700'
                       }`}>
                         {STATUS_LABELS[asset.status] ?? asset.status}
@@ -374,8 +383,11 @@ const AssetMap = memo(({ assets = [], selectedAsset, onClearSelection, branchNam
                 </h4>
                 <div className="flex items-center gap-2 mb-3">
                   <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    selectedAssetWithAddress.status === 'Rented' ? 'bg-neutral-200 text-neutral-700' :
-                    selectedAssetWithAddress.status === 'Late' ? 'bg-red-50 text-red-700' :
+                    selectedAssetWithAddress.status === 'Available' ? 'bg-green-50 text-green-700' :
+                    selectedAssetWithAddress.status === 'Perlu Diupdate' ? 'bg-amber-50 text-amber-700' :
+                    selectedAssetWithAddress.status === 'Diperbaiki' ? 'bg-blue-50 text-blue-700' :
+                    selectedAssetWithAddress.status === 'Rusak' ? 'bg-red-50 text-red-700' :
+                    selectedAssetWithAddress.status === 'Hilang' ? 'bg-neutral-200 text-neutral-700' :
                     'bg-neutral-100 text-neutral-700'
                   }`}>
                     {STATUS_LABELS[selectedAssetWithAddress.status] ?? selectedAssetWithAddress.status}

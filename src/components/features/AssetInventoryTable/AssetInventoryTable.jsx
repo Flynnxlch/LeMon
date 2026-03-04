@@ -8,7 +8,7 @@ const AssetInventoryTable = memo(({
   onSelectAsset, 
   onAssetClick,
   selectedAssetId,
-  filterByStatus = ['Available', 'Late', 'Rented'] // Default filter
+  filterByStatus = ['Available', 'Perlu Diupdate', 'Diperbaiki', 'Rusak', 'Hilang']
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -58,10 +58,14 @@ const AssetInventoryTable = memo(({
     switch (status) {
       case 'Available':
         return 'bg-green-50 text-green-700';
-      case 'Rented':
-        return 'bg-neutral-100 text-neutral-700';
-      case 'Late':
+      case 'Perlu Diupdate':
+        return 'bg-amber-50 text-amber-700';
+      case 'Diperbaiki':
+        return 'bg-blue-50 text-blue-700';
+      case 'Rusak':
         return 'bg-red-50 text-red-700';
+      case 'Hilang':
+        return 'bg-neutral-200 text-neutral-700';
       default:
         return 'bg-neutral-100 text-neutral-700';
     }

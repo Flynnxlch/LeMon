@@ -17,33 +17,40 @@ function applyDueUpdateStatus(assets) {
   const now = new Date();
   now.setHours(0, 0, 0, 0);
   return (assets || []).map((a) => {
-    if (a.dueUpdate && new Date(a.dueUpdate).getTime() <= now.getTime()) {
-      return { ...a, status: 'Late' };
+    if (a.status === 'Available' && a.dueUpdate && new Date(a.dueUpdate).getTime() <= now.getTime()) {
+      return { ...a, status: 'Perlu Diupdate' };
     }
     return a;
   });
 }
 
+const STATUS_IDS = {
+  Available: 2,
+  'Perlu Diupdate': 3,
+  Diperbaiki: 4,
+  Rusak: 5,
+  Hilang: 6,
+};
+
 const getStatsFromAssets = (assets, role) => {
   const total = assets.length;
-  const active = assets.filter((a) => a.status === 'Rented').length;
-  const late = assets.filter((a) => a.status === 'Late').length;
+  const byStatus = {
+    Available: assets.filter((a) => a.status === 'Available').length,
+    'Perlu Diupdate': assets.filter((a) => a.status === 'Perlu Diupdate').length,
+    Diperbaiki: assets.filter((a) => a.status === 'Diperbaiki').length,
+    Rusak: assets.filter((a) => a.status === 'Rusak').length,
+    Hilang: assets.filter((a) => a.status === 'Hilang').length,
+  };
 
-  if (role === 'Admin Pusat') {
-    return [
-      { id: 1, label: 'Total Assets', value: total.toLocaleString(), icon: HiCube, expandable: true },
-      { id: 2, label: 'Sedang Disewa', value: active.toLocaleString(), icon: HiCheckCircle },
-      { id: 3, label: 'Perlu Update', value: late.toLocaleString(), icon: HiExclamationCircle },
-    ];
-  }
-  if (role === 'Admin Cabang') {
-    return [
-      { id: 1, label: 'Branch Assets', value: total.toLocaleString(), icon: HiCube, expandable: true },
-      { id: 2, label: 'Active', value: active.toLocaleString(), icon: HiCheckCircle },
-      { id: 3, label: 'Perlu Diupdate', value: late.toLocaleString(), icon: HiExclamationCircle },
-    ];
-  }
-  return [];
+  const statCards = [
+    { id: 1, label: role === 'Admin Pusat' ? 'Total Assets' : 'Branch Assets', value: total.toLocaleString(), icon: HiCube, expandable: true },
+    { id: STATUS_IDS.Available, label: 'Available', value: byStatus.Available.toLocaleString(), icon: HiCheckCircle },
+    { id: STATUS_IDS['Perlu Diupdate'], label: 'Perlu Diupdate', value: byStatus['Perlu Diupdate'].toLocaleString(), icon: HiExclamationCircle },
+    { id: STATUS_IDS.Diperbaiki, label: 'Diperbaiki', value: byStatus.Diperbaiki.toLocaleString(), icon: HiCube },
+    { id: STATUS_IDS.Rusak, label: 'Rusak', value: byStatus.Rusak.toLocaleString(), icon: HiExclamationCircle },
+    { id: STATUS_IDS.Hilang, label: 'Hilang', value: byStatus.Hilang.toLocaleString(), icon: HiExclamationCircle },
+  ];
+  return statCards;
 };
 
 const getTypeBreakdown = (assets) => {
@@ -223,7 +230,7 @@ const Dashboard = memo(() => {
 
       <div
         className={`grid gap-4 mb-8 items-stretch transition-all duration-300 ${
-          !expandedStatId ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-1 md:grid-cols-2'
+          !expandedStatId ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6' : 'grid-cols-1 md:grid-cols-2'
         }`}
       >
         {!expandedStatId ? (
@@ -312,13 +319,16 @@ const Dashboard = memo(() => {
           className={`${selectedAsset ? 'lg:col-span-1' : 'lg:col-span-2'} transition-all duration-300`}
         >
           <AssetTable
-            assets={filteredAssets.filter((a) => a.status !== 'Available')}
+            assets={filteredAssets.filter((a) => {
+              if (a.status !== 'Available') return true;
+              return !!a.holder;
+            })}
             loading={loading}
             userRole={user?.role}
             branchId={tableBranchId}
             onViewAsset={handleViewAsset}
             selectedAssetId={selectedAsset?.id}
-            excludeAvailable={true}
+            excludeAvailable={false}
             branchFilter={branchFilter}
             branches={isAdminPusat ? branches : []}
             onBranchFilterChange={setBranchFilter}
