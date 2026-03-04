@@ -1,7 +1,7 @@
 import { AnimatePresence, motion as Motion } from 'framer-motion';
 import { memo, useCallback, useMemo, useState } from 'react';
 import {
-  HiCheckCircle,
+  HiChartPie,
   HiChevronDown,
   HiChevronUp,
   HiCube,
@@ -9,6 +9,7 @@ import {
 } from 'react-icons/hi';
 import AssetMap from '../components/features/AssetMap/AssetMap';
 import AssetTable from '../components/features/AssetTable/AssetTable';
+import StatusPieChart from '../components/features/StatusPieChart/StatusPieChart';
 import MainLayout from '../components/layout/MainLayout/MainLayout';
 import { useAuth } from '../context/AuthContext';
 import { useAssets, useBranches } from '../hooks/useQueries';
@@ -24,34 +25,14 @@ function applyDueUpdateStatus(assets) {
   });
 }
 
-const STATUS_IDS = {
-  Available: 2,
-  'Perlu Diupdate': 3,
-  Diperbaiki: 4,
-  Rusak: 5,
-  Hilang: 6,
-};
-
-const getStatsFromAssets = (assets, role) => {
-  const total = assets.length;
-  const byStatus = {
-    Available: assets.filter((a) => a.status === 'Available').length,
-    'Perlu Diupdate': assets.filter((a) => a.status === 'Perlu Diupdate').length,
-    Diperbaiki: assets.filter((a) => a.status === 'Diperbaiki').length,
-    Rusak: assets.filter((a) => a.status === 'Rusak').length,
-    Hilang: assets.filter((a) => a.status === 'Hilang').length,
-  };
-
-  const statCards = [
-    { id: 1, label: role === 'Admin Pusat' ? 'Total Assets' : 'Branch Assets', value: total.toLocaleString(), icon: HiCube, expandable: true },
-    { id: STATUS_IDS.Available, label: 'Available', value: byStatus.Available.toLocaleString(), icon: HiCheckCircle },
-    { id: STATUS_IDS['Perlu Diupdate'], label: 'Perlu Diupdate', value: byStatus['Perlu Diupdate'].toLocaleString(), icon: HiExclamationCircle },
-    { id: STATUS_IDS.Diperbaiki, label: 'Diperbaiki', value: byStatus.Diperbaiki.toLocaleString(), icon: HiCube },
-    { id: STATUS_IDS.Rusak, label: 'Rusak', value: byStatus.Rusak.toLocaleString(), icon: HiExclamationCircle },
-    { id: STATUS_IDS.Hilang, label: 'Hilang', value: byStatus.Hilang.toLocaleString(), icon: HiExclamationCircle },
-  ];
-  return statCards;
-};
+/** Status counts for pie chart and Perlu Diupdate card */
+const getStatusCounts = (assets) => ({
+  Available: assets.filter((a) => a.status === 'Available').length,
+  'Perlu Diupdate': assets.filter((a) => a.status === 'Perlu Diupdate').length,
+  Diperbaiki: assets.filter((a) => a.status === 'Diperbaiki').length,
+  Rusak: assets.filter((a) => a.status === 'Rusak').length,
+  Hilang: assets.filter((a) => a.status === 'Hilang').length,
+});
 
 const getTypeBreakdown = (assets) => {
   const map = {};
@@ -61,47 +42,47 @@ const getTypeBreakdown = (assets) => {
   return Object.entries(map).sort((a, b) => b[1] - a[1]);
 };
 
+/** Shared card layout: header (label + icon), divider, then content below */
+const CardHeader = memo(({ label, icon: IconComponent, expandable, expanded }) => (
+  <div className="flex items-center justify-between gap-2">
+    <div className="flex items-center gap-2 min-w-0">
+      {IconComponent && (
+        <div className="p-2 rounded-lg bg-neutral-100 shrink-0">
+          <IconComponent className="w-5 h-5 text-neutral-600" />
+        </div>
+      )}
+      <p className="text-sm font-medium text-neutral-500 truncate">{label}</p>
+    </div>
+    {expandable && (
+      <span className="p-1 text-neutral-400 shrink-0">
+        {expanded ? <HiChevronUp className="w-5 h-5" /> : <HiChevronDown className="w-5 h-5" />}
+      </span>
+    )}
+  </div>
+));
+CardHeader.displayName = 'CardHeader';
+
 const StatCard = memo(({ stat, expanded, onToggle, typeBreakdown = [] }) => {
   const IconComponent = stat.icon;
   const breakdownList = typeBreakdown;
 
   return (
-    <div className="bg-white rounded-xl border border-neutral-200 p-6 hover:border-neutral-300 transition-all duration-200 overflow-hidden h-full flex flex-col min-h-0">
+    <div className="bg-white rounded-xl border border-neutral-200 p-4 hover:border-neutral-300 transition-all duration-200 overflow-hidden flex flex-col min-h-0">
       <button
         type="button"
         onClick={stat.expandable ? onToggle : undefined}
-        className={`w-full text-left flex-1 min-h-0 flex flex-col ${stat.expandable ? 'cursor-pointer' : ''}`}
+        className={`w-full text-left flex flex-col gap-0 ${stat.expandable ? 'cursor-pointer' : ''}`}
       >
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <p className="text-sm font-medium text-neutral-500 mb-1">{stat.label}</p>
-            <h3 className="text-3xl font-bold text-neutral-900 mb-2 tracking-tight">
-              {stat.value}
-            </h3>
-            {stat.change != null && (
-              <div className="flex items-center">
-                <span
-                  className={`inline-flex items-center text-sm font-medium ${
-                    stat.changeType === 'increase' ? 'text-green-600' : 'text-red-600'
-                  }`}
-                >
-                  {stat.changeType === 'increase' ? '↑' : '↓'} {stat.change}
-                </span>
-                <span className="text-xs text-neutral-400 ml-2">vs last month</span>
-              </div>
-            )}
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="p-2.5 rounded-lg bg-neutral-100">
-              <IconComponent className="w-6 h-6 text-neutral-600" />
-            </div>
-            {stat.expandable && (
-              <span className="p-1 text-neutral-400">
-                {expanded ? <HiChevronUp className="w-5 h-5" /> : <HiChevronDown className="w-5 h-5" />}
-              </span>
-            )}
-          </div>
-        </div>
+        <CardHeader
+          label={stat.label}
+          icon={IconComponent}
+          expandable={stat.expandable}
+          expanded={expanded}
+        />
+        <div className="border-t border-neutral-200 my-3" />
+        <h3 className="text-2xl font-bold text-neutral-900 tracking-tight">
+          {stat.value}
+        </h3>
       </button>
 
       <AnimatePresence>
@@ -111,7 +92,7 @@ const StatCard = memo(({ stat, expanded, onToggle, typeBreakdown = [] }) => {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="border-t border-neutral-200 mt-4 pt-4 shrink-0"
+            className="border-t border-neutral-200 mt-3 pt-3 shrink-0"
           >
             <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">
               Breakdown per tipe
@@ -177,12 +158,11 @@ const Dashboard = memo(() => {
     return allAssets.filter((a) => a.branch_id === branchFilter);
   }, [allAssets, isAdminPusat, branchFilter]);
 
-  const stats = useMemo(
-    () => getStatsFromAssets(filteredAssets, user?.role),
-    [filteredAssets, user?.role]
-  );
-
+  const statusCounts = useMemo(() => getStatusCounts(filteredAssets), [filteredAssets]);
   const typeBreakdown = useMemo(() => getTypeBreakdown(filteredAssets), [filteredAssets]);
+
+  const totalLabel = isAdminPusat ? 'Total Assets' : 'Branch Assets';
+  const totalValue = filteredAssets.length;
 
   const top5Branches = useMemo(
     () => [...branches].sort((a, b) => (b.assetCount || 0) - (a.assetCount || 0)).slice(0, 5),
@@ -205,15 +185,12 @@ const Dashboard = memo(() => {
 
   const handleClearSelection = useCallback(() => setSelectedAsset(null), []);
 
-  const toggleExpand = useCallback((statId) => {
-    setExpandedStatId((prev) => (prev === statId ? null : statId));
+  const toggleExpand = useCallback(() => {
+    setExpandedStatId((prev) => (prev === 1 ? null : 1));
   }, []);
 
   const tableBranchId = isAdminPusat && branchFilter ? branchFilter : user?.branch_id;
-
-  const leftStatId = expandedStatId ?? stats[0]?.id;
-  const leftStat = stats.find((s) => s.id === leftStatId) ?? stats[0];
-  const rightStats = stats.filter((s) => s.id !== leftStatId);
+  const isExpanded = expandedStatId === 1;
 
   return (
     <MainLayout>
@@ -229,87 +206,101 @@ const Dashboard = memo(() => {
       </div>
 
       <div
-        className={`grid gap-4 mb-8 items-stretch transition-all duration-300 ${
-          !expandedStatId ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6' : 'grid-cols-1 md:grid-cols-2'
+        className={`grid gap-4 mb-8 transition-all duration-300 ${
+          !isExpanded ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1 md:grid-cols-2'
         }`}
       >
-        {!expandedStatId ? (
-          stats.map((stat) => (
-            <StatCard
-              key={stat.id}
-              stat={stat}
-              expanded={false}
-              onToggle={() => toggleExpand(stat.id)}
-              typeBreakdown={stat.id === 1 ? typeBreakdown : []}
-            />
-          ))
+        {!isExpanded ? (
+          <>
+            {/* Kiri: Branch/Total Asset + Perlu Diupdate (stacked, tidak stretch mengikuti chart) */}
+            <div className="flex flex-col gap-4">
+              <StatCard
+                stat={{
+                  id: 1,
+                  label: totalLabel,
+                  value: totalValue.toLocaleString(),
+                  icon: HiCube,
+                  expandable: true,
+                }}
+                expanded={false}
+                onToggle={toggleExpand}
+                typeBreakdown={typeBreakdown}
+              />
+              <div className="bg-white rounded-xl border border-neutral-200 p-4 hover:border-neutral-300 transition-all duration-200 flex flex-col min-h-0">
+                <CardHeader label="Perlu Diupdate" icon={HiExclamationCircle} />
+                <div className="border-t border-neutral-200 my-3" />
+                <h3 className="text-2xl font-bold text-neutral-900 tracking-tight">
+                  {statusCounts['Perlu Diupdate'].toLocaleString()}
+                </h3>
+              </div>
+            </div>
+            {/* Kanan: Status Aset (chart) */}
+            <div className="bg-white rounded-xl border border-neutral-200 p-4 hover:border-neutral-300 transition-all duration-200 flex flex-col min-h-0">
+              <CardHeader label="Status Aset" icon={HiChartPie} />
+              <div className="border-t border-neutral-200 my-3" />
+              <div className="flex-1 min-h-0 flex items-center">
+                <StatusPieChart
+                  byStatus={statusCounts}
+                  includePerluDiupdate={false}
+                  size={140}
+                  showLegend={true}
+                />
+              </div>
+            </div>
+          </>
         ) : (
           <>
+            {/* Kiri: Total/Branch Assets expanded (breakdown per tipe) */}
             <div className="min-h-0 flex flex-col">
               <StatCard
-                stat={leftStat}
+                stat={{
+                  id: 1,
+                  label: totalLabel,
+                  value: totalValue.toLocaleString(),
+                  icon: HiCube,
+                  expandable: true,
+                }}
                 expanded={true}
-                onToggle={() => toggleExpand(leftStat.id)}
-                typeBreakdown={leftStat.id === 1 ? typeBreakdown : []}
+                onToggle={toggleExpand}
+                typeBreakdown={typeBreakdown}
               />
             </div>
-            <div className="flex flex-col gap-4 min-h-0 flex-1">
-              <AnimatePresence mode="wait">
-                {expandedStatId === 1 && isAdminPusat ? (
-                  <Motion.div
-                    key="top-branches"
-                    initial={{ opacity: 0, x: 12 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -12 }}
-                    transition={{ duration: 0.2 }}
-                    className="bg-white rounded-xl border border-neutral-200 p-6 h-full flex flex-col min-h-0"
-                  >
-                    <h3 className="text-sm font-medium text-neutral-500 mb-2">Top Branches</h3>
+            {/* Kanan: Admin Pusat = Top Branches; Admin Cabang = Status Aset chart */}
+            {isAdminPusat ? (
+              <div className="bg-white rounded-xl border border-neutral-200 p-4 flex flex-col min-h-0">
+                <CardHeader label="Top Branches" icon={HiCube} />
+                <div className="border-t border-neutral-200 my-3" />
+                <div className="flex flex-col gap-[2px] max-h-[200px] overflow-y-auto overflow-x-hidden scroll-smooth flex-1 min-h-0">
+                  {top5Branches.map((branch, index) => (
                     <div
-                      className="border-t border-neutral-200 pt-3 flex flex-col gap-[2px] max-h-[200px] overflow-y-auto overflow-x-hidden scroll-smooth flex-1 min-h-0"
-                      style={{ scrollBehavior: 'smooth' }}
+                      key={branch.id}
+                      className="flex items-center gap-3 py-1.5 border-t border-neutral-200 first:border-t-0 first:pt-0"
                     >
-                      {top5Branches.map((branch, index) => (
-                        <Motion.div
-                          key={branch.id}
-                          initial={{ opacity: 0, y: 4 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.05 }}
-                          className="flex items-center gap-3 py-1.5 border-t border-neutral-200 first:border-t-0 first:pt-0"
-                        >
-                          <span className="w-7 h-7 flex items-center justify-center rounded-full bg-neutral-100 text-xs font-bold text-neutral-700 shrink-0">
-                            {index + 1}
-                          </span>
-                          <span className="flex-1 font-medium text-neutral-900 truncate">{branch.name}</span>
-                          <span className="text-sm font-semibold text-neutral-600 shrink-0">
-                            {branch.assetCount ?? 0} aset
-                          </span>
-                        </Motion.div>
-                      ))}
+                      <span className="w-7 h-7 flex items-center justify-center rounded-full bg-neutral-100 text-xs font-bold text-neutral-700 shrink-0">
+                        {index + 1}
+                      </span>
+                      <span className="flex-1 font-medium text-neutral-900 truncate">{branch.name}</span>
+                      <span className="text-sm font-semibold text-neutral-600 shrink-0">
+                        {branch.assetCount ?? 0} aset
+                      </span>
                     </div>
-                  </Motion.div>
-                ) : (
-                  <Motion.div
-                    key="sub-cards"
-                    initial={{ opacity: 0, x: -12 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 12 }}
-                    transition={{ duration: 0.2 }}
-                    className="flex flex-col gap-4 h-full"
-                  >
-                    {rightStats.map((stat) => (
-                      <StatCard
-                        key={stat.id}
-                        stat={stat}
-                        expanded={false}
-                        onToggle={() => toggleExpand(stat.id)}
-                        typeBreakdown={stat.id === 1 ? typeBreakdown : []}
-                      />
-                    ))}
-                  </Motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="bg-white rounded-xl border border-neutral-200 p-4 flex flex-col min-h-0">
+                <CardHeader label="Status Aset" icon={HiChartPie} />
+                <div className="border-t border-neutral-200 my-3" />
+                <div className="flex-1 min-h-0 flex items-center">
+                  <StatusPieChart
+                    byStatus={statusCounts}
+                    includePerluDiupdate={true}
+                    size={200}
+                    showLegend={true}
+                  />
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>
