@@ -350,6 +350,17 @@ export function useDeleteBranch() {
   });
 }
 
+export function useUpdateBranch() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }) => api.branches.update(id, body),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['branches'] });
+      invalidateData('branches');
+    },
+  });
+}
+
 export function usePasswordApprovals(status, options = {}) {
   return useQuery({
     queryKey: queryKeys.passwordApprovals(status),

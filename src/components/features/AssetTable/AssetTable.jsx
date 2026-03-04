@@ -24,7 +24,19 @@ const StatusBadge = memo(({ status }) => {
 
 StatusBadge.displayName = 'StatusBadge';
 
-const AssetTable = memo(({ assets: assetsProp = [], loading = false, userRole, branchId, onViewAsset, selectedAssetId, excludeAvailable = false, branchFilter = '', branches = [], onBranchFilterChange }) => {
+const AssetTable = memo(
+  ({
+    assets: assetsProp = [],
+    loading = false,
+    userRole,
+    branchId,
+    onViewAsset,
+    selectedAssetId,
+    excludeAvailable = false,
+    branchFilter = '',
+    branches = [],
+    onBranchFilterChange,
+  }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -39,15 +51,15 @@ const AssetTable = memo(({ assets: assetsProp = [], loading = false, userRole, b
 
   // Filter assets based on search and status
   const filteredAssets = useMemo(() => {
-    return allAssets.filter(asset => {
+    return allAssets.filter((asset) => {
       const holderName = asset.holder?.fullName || '';
-      const matchesSearch = 
+      const matchesSearch =
         asset.serialNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
         asset.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
         holderName.toLowerCase().includes(searchQuery.toLowerCase());
-      
+
       const matchesStatus = statusFilter === 'all' || asset.status === statusFilter;
-      
+
       return matchesSearch && matchesStatus;
     });
   }, [allAssets, searchQuery, statusFilter]);
@@ -81,11 +93,19 @@ const AssetTable = memo(({ assets: assetsProp = [], loading = false, userRole, b
     });
   }, []);
 
-  const handleDetailClick = useCallback((asset) => {
-    if (onViewAsset) {
-      onViewAsset(asset);
-    }
-  }, [onViewAsset]);
+  const handleDetailClick = useCallback(
+    (asset) => {
+      if (onViewAsset) {
+        onViewAsset(asset);
+      }
+    },
+    [onViewAsset]
+  );
+
+  const getBranchName = useCallback(
+    (asset) => asset.branch_name || asset.branchName || asset.branch?.name || '—',
+    []
+  );
   
   return (
     <Card title="Asset Inventory" subtitle="Manage and track all rental assets">
@@ -145,16 +165,34 @@ const AssetTable = memo(({ assets: assetsProp = [], loading = false, userRole, b
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
                   Serial Number
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider"
+                >
                   Type
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider"
+                >
+                  Cabang
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider"
+                >
                   Holder
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider"
+                >
                   Status
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider"
+                >
                   Last Update
                 </th>
               </tr>
@@ -162,7 +200,7 @@ const AssetTable = memo(({ assets: assetsProp = [], loading = false, userRole, b
             <tbody className="bg-white divide-y divide-gray-100">
               {loading ? (
                 <tr>
-                  <td colSpan="5" className="px-6 py-8 text-center text-neutral-500">
+                  <td colSpan="6" className="px-6 py-8 text-center text-neutral-500">
                     Loading assets...
                   </td>
                 </tr>
@@ -176,11 +214,20 @@ const AssetTable = memo(({ assets: assetsProp = [], loading = false, userRole, b
                       selectedAssetId === asset.id ? 'bg-neutral-50 ring-1 ring-neutral-900 ring-inset' : ''
                     }`}
                   >
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-neutral-900" title={asset.serialNumber}>
+                    <td
+                      className="px-6 py-4 whitespace-nowrap text-sm font-medium text-neutral-900"
+                      title={asset.serialNumber}
+                    >
                       {truncate(asset.serialNumber, 20)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-neutral-900" title={asset.type}>
+                    <td
+                      className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-neutral-900"
+                      title={asset.type}
+                    >
                       {truncate(asset.type, 20)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500">
+                      {getBranchName(asset)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500">
                       {asset.holder ? (

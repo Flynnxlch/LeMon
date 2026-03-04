@@ -138,7 +138,7 @@ const Dashboard = memo(() => {
       p.branchId = user.branch_id;
     }
     return p;
-  }, [user?.branch_id, isAdminPusat, branchFilter]);
+  }, [user, isAdminPusat, branchFilter]);
 
   const { data: rawAssets = [], isLoading: assetsLoading } = useAssets(assetParams, {
     enabled: !!user,

@@ -113,6 +113,12 @@ export const api = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       }),
+    update: (id, body) =>
+      request(`branches/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      }),
     delete: (id) => request(`branches/${id}`, { method: 'DELETE' }),
   },
   users: {

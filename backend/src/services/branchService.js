@@ -114,3 +114,32 @@ export async function deleteBranch(id) {
   invalidateBranches();
   return { ok: true };
 }
+
+export async function updateBranch(id, data) {
+  const updated = await prisma.branch.update({
+    where: { id },
+    data: {
+      name: data.name,
+      address: data.address,
+      city: data.city,
+      phone: data.phone,
+    },
+    select: {
+      id: true,
+      name: true,
+      address: true,
+      city: true,
+      phone: true,
+      createdAt: true,
+    },
+  });
+  invalidateBranches();
+  return {
+    id: updated.id,
+    name: updated.name,
+    address: updated.address,
+    city: updated.city,
+    phone: updated.phone,
+    created: updated.createdAt,
+  };
+}

@@ -1,6 +1,7 @@
 import { memo, useCallback, useMemo, useState } from 'react';
 import { HiCheck, HiPencil, HiPlus, HiTrash, HiX } from 'react-icons/hi';
 import Button from '../components/common/Button/Button';
+import Input from '../components/common/Input/Input';
 import AddBranchModal from '../components/features/BranchManagement/AddBranchModal';
 import AssignUserToBranchModal from '../components/features/BranchManagement/AssignUserToBranchModal';
 import MainLayout from '../components/layout/MainLayout/MainLayout';
@@ -18,6 +19,7 @@ import {
   useRejectAccountRequest,
   useRejectPasswordRequest,
   useUpdateUserBranch,
+  useUpdateBranch,
   useUsers,
 } from '../hooks/useQueries';
 
@@ -33,6 +35,9 @@ const BranchUserManagement = memo(() => {
   });
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [deleteBranchConfirm, setDeleteBranchConfirm] = useState(null);
+  const [editBranch, setEditBranch] = useState(null);
+  const [editBranchForm, setEditBranchForm] = useState({ name: '', city: '' });
+  const [editBranchErrors, setEditBranchErrors] = useState({});
   const [passwordApprovalDetailId, setPasswordApprovalDetailId] = useState(null);
 
   const { data: branches = [], isLoading: branchesLoading } = useBranches();
@@ -44,6 +49,7 @@ const BranchUserManagement = memo(() => {
 
   const createBranchMutation = useCreateBranch();
   const deleteBranchMutation = useDeleteBranch();
+  const updateBranchMutation = useUpdateBranch();
   const approveAccountMutation = useApproveAccountRequest();
   const rejectAccountMutation = useRejectAccountRequest();
   const approvePasswordMutation = useApprovePasswordRequest();
@@ -92,7 +98,7 @@ const BranchUserManagement = memo(() => {
     setAssignModal({ open: true, mode: 'edit', request: null, user });
   }, []);
 
-  const handleAssignConfirm = useCallback((branchId, _branchName) => {
+  const handleAssignConfirm = useCallback((branchId) => {
     if (assignModal.mode === 'approve' && assignModal.request) {
       approveAccountMutation.mutate(
         { id: assignModal.request.id, body: { branchId } },
@@ -159,6 +165,57 @@ const BranchUserManagement = memo(() => {
       onError: (err) => toast.error(err.message || 'Gagal menghapus cabang.'),
     });
   }, [deleteBranchMutation, toast]);
+
+  const openEditBranchModal = useCallback((branch) => {
+    setEditBranch(branch);
+    setEditBranchForm({
+      name: branch.name || '',
+      city: branch.city || '',
+    });
+    setEditBranchErrors({});
+  }, []);
+
+  const handleEditBranchChange = useCallback((e) => {
+    const { name, value } = e.target;
+    setEditBranchForm((prev) => ({ ...prev, [name]: value }));
+    setEditBranchErrors((prev) => ({ ...prev, [name]: '' }));
+  }, []);
+
+  const handleCloseEditBranch = useCallback(() => {
+    setEditBranch(null);
+    setEditBranchForm({ name: '', city: '' });
+    setEditBranchErrors({});
+  }, []);
+
+  const handleSaveBranch = useCallback(
+    (e) => {
+      e.preventDefault();
+      if (!editBranch) return;
+
+      const errors = {};
+      if (!editBranchForm.name.trim()) {
+        errors.name = 'Branch name is required';
+      }
+      if (Object.keys(errors).length > 0) {
+        setEditBranchErrors(errors);
+        return;
+      }
+
+      updateBranchMutation.mutate(
+        { id: editBranch.id, body: { name: editBranchForm.name.trim(), city: editBranchForm.city || undefined } },
+        {
+          onSuccess: () => {
+            toast.success('Cabang berhasil diupdate.');
+            handleCloseEditBranch();
+          },
+          onError: (err) => {
+            toast.error(err.message || 'Gagal mengupdate cabang.');
+          },
+        }
+      );
+    },
+    [editBranch, editBranchForm, updateBranchMutation, toast, handleCloseEditBranch]
+  );
 
   const handleDeleteUser = useCallback((user) => {
     deleteUserMutation.mutate(user.id, {
@@ -228,10 +285,7 @@ const BranchUserManagement = memo(() => {
                       <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">
                         Location
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">
-                        Assigned Admin
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider w-16">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider w-24">
                         Actions
                       </th>
                     </tr>
@@ -239,13 +293,13 @@ const BranchUserManagement = memo(() => {
                   <tbody className="divide-y divide-neutral-200">
                     {loading ? (
                       <tr>
-                        <td colSpan={4} className="px-4 py-8 text-center text-sm text-neutral-500">
+                        <td colSpan={3} className="px-4 py-8 text-center text-sm text-neutral-500">
                           Memuat...
                         </td>
                       </tr>
                     ) : branchesWithAdmin.length === 0 ? (
                       <tr>
-                        <td colSpan={4} className="px-4 py-8 text-center text-sm text-neutral-500">
+                        <td colSpan={3} className="px-4 py-8 text-center text-sm text-neutral-500">
                           Belum ada cabang. Klik &quot;Add Branch&quot; untuk menambah.
                         </td>
                       </tr>
@@ -265,19 +319,27 @@ const BranchUserManagement = memo(() => {
                           <td className="px-4 py-3 text-neutral-500">
                             {branch.city || '—'}
                           </td>
-                          <td className="px-4 py-3 text-neutral-500">
-                            {branch.assignedAdminName || '—'}
-                          </td>
                           <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                            <button
-                              type="button"
-                              onClick={() => setDeleteBranchConfirm(branch)}
-                              className="text-red-600 hover:text-red-800 transition-colors p-1 rounded"
-                              aria-label="Delete branch"
-                              title="Hapus cabang"
-                            >
-                              <HiTrash className="w-4 h-4" />
-                            </button>
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => openEditBranchModal(branch)}
+                                className="text-neutral-500 hover:text-neutral-900 transition-colors p-1 rounded"
+                                aria-label="Edit branch"
+                                title="Edit branch"
+                              >
+                                <HiPencil className="w-4 h-4" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setDeleteBranchConfirm(branch)}
+                                className="text-red-600 hover:text-red-800 transition-colors p-1 rounded"
+                                aria-label="Delete branch"
+                                title="Hapus cabang"
+                              >
+                                <HiTrash className="w-4 h-4" />
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))
@@ -610,6 +672,58 @@ const BranchUserManagement = memo(() => {
           initialBranchId={assignModal.user?.branchId || null}
           onConfirm={handleAssignConfirm}
         />
+
+        {editBranch && (
+          <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-lg border border-neutral-200 shadow-lg max-w-lg w-full">
+              <div className="flex items-center justify-between p-4 border-b border-neutral-200">
+                <h2 className="text-base font-semibold text-neutral-900">
+                  Edit Branch
+                </h2>
+                <button
+                  type="button"
+                  onClick={handleCloseEditBranch}
+                  className="text-neutral-400 hover:text-neutral-900 transition-colors"
+                  aria-label="Close edit branch modal"
+                >
+                  <HiX className="w-5 h-5" />
+                </button>
+              </div>
+              <form onSubmit={handleSaveBranch} className="p-4 space-y-4">
+                <Input
+                  label="Branch Name"
+                  name="name"
+                  value={editBranchForm.name}
+                  onChange={handleEditBranchChange}
+                  placeholder="e.g., Jakarta Pusat Branch"
+                  error={editBranchErrors.name}
+                  required
+                />
+                <Input
+                  label="City (optional)"
+                  name="city"
+                  value={editBranchForm.city}
+                  onChange={handleEditBranchChange}
+                  placeholder="e.g., Jakarta"
+                  error={editBranchErrors.city}
+                />
+                <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-200">
+                  <Button type="button" variant="secondary" size="sm" onClick={handleCloseEditBranch}>
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    size="sm"
+                    disabled={updateBranchMutation.isLoading}
+                  >
+                    {updateBranchMutation.isLoading ? 'Saving...' : 'Save Changes'}
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
 
         {deleteConfirm && (
           <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">

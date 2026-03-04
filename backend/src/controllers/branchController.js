@@ -43,3 +43,15 @@ export async function deleteBranch(req, res, next) {
     next(err);
   }
 }
+
+export async function updateBranch(req, res, next) {
+  try {
+    const result = await branchService.updateBranch(req.params.id, req.body);
+    res.json({ success: true, data: result });
+  } catch (err) {
+    if (err.code === 'P2025' || err.message === 'Branch not found') {
+      return res.status(404).json({ success: false, error: 'Branch not found' });
+    }
+    next(err);
+  }
+}

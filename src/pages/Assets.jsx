@@ -44,10 +44,11 @@ const Assets = memo(() => {
   const [isRequestNewAssetModalOpen, setIsRequestNewAssetModalOpen] = useState(false);
   const [assetToTransfer, setAssetToTransfer] = useState(null);
   const [showPastHoldersOverlay, setShowPastHoldersOverlay] = useState(false);
+  const [branchFilter, setBranchFilter] = useState('');
 
   const assetParams = useMemo(() => {
     const p = {};
-    // Admin Cabang: filter by assigned branch. Admin Pusat: see all branches (no branchId).
+    // Admin Cabang: filter by assigned branch. Admin Pusat: see all branches (no branchId; filter via UI).
     if (isAdminCabang && user?.branch_id) p.branchId = user.branch_id;
     return p;
   }, [isAdminCabang, user?.branch_id]);
@@ -74,6 +75,11 @@ const Assets = memo(() => {
   const createAssetRequestMutation = useCreateAssetRequest();
 
   const branchAssets = useMemo(() => applyDueUpdateStatus(rawAssets), [rawAssets]);
+
+  const filteredAssets = useMemo(() => {
+    if (!isAdminPusat || !branchFilter) return branchAssets;
+    return branchAssets.filter((a) => a.branch_id === branchFilter);
+  }, [branchAssets, isAdminPusat, branchFilter]);
 
   const handleViewAsset = useCallback((asset) => {
     setSelectedAssetPreview(asset);
@@ -228,13 +234,15 @@ const Assets = memo(() => {
           className={`${selectedAsset ? 'lg:col-span-1' : 'lg:col-span-2'} transition-all duration-300`}
         >
           <AssetTable
-            assets={branchAssets}
+            assets={filteredAssets}
             loading={loading}
             userRole={user?.role}
-            branchId={user?.branch_id}
+            branchId={isAdminPusat && branchFilter ? branchFilter : user?.branch_id}
             onViewAsset={handleViewAsset}
             selectedAssetId={selectedAssetId}
-            branches={branches}
+            branches={isAdminPusat ? branches : []}
+            branchFilter={branchFilter}
+            onBranchFilterChange={setBranchFilter}
           />
         </div>
 
