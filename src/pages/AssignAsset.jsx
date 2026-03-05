@@ -78,9 +78,8 @@ const AssignAsset = memo(() => {
     if (status === 'Hilang') return [];
     if ((status === 'Available' && hasHolder) || status === 'Perlu Diupdate' || status === 'Diperbaiki' || status === 'Rusak') {
       return [
-        { id: 'reassign', label: 'ReAssign' },
+        { id: 'reassign', label: 'Reassign' },
         { id: 'update', label: 'Update' },
-        { id: 'updateRusak', label: 'Update Rusak' },
         { id: 'laporkan_hilang', label: 'Laporkan Kehilangan' },
       ];
     }
@@ -90,7 +89,6 @@ const AssignAsset = memo(() => {
   const getFormTitle = useCallback(() => {
     if (activeAction === 'assign') return 'Assign Asset';
     if (activeAction === 'reassign') return 'ReAssign Asset';
-    if (activeAction === 'updateRusak') return 'Update Rusak';
     return 'Update Asset';
   }, [activeAction]);
 
@@ -522,6 +520,53 @@ const AssignAsset = memo(() => {
               </div>
             </div>
 
+            {/* Holder Information (read-only, only for Update) - same style as Selected Asset */}
+            {isUpdateAction && selectedAsset?.holder && (
+              <div className="p-4 bg-neutral-50 border border-neutral-200 rounded-lg">
+                <h3 className="text-sm font-semibold text-neutral-900 mb-2">
+                  Holder Information
+                </h3>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <span className="text-neutral-500">Nama:</span>
+                    <span className="ml-2 font-medium text-neutral-900">
+                      {selectedAsset.holder.fullName || '-'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-neutral-500">NIP:</span>
+                    <span className="ml-2 font-medium text-neutral-900">
+                      {selectedAsset.holder.nip || '-'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-neutral-500">Kode Cabang:</span>
+                    <span className="ml-2 font-medium text-neutral-900">
+                      {selectedAsset.holder.branchCode || '-'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-neutral-500">Divisi:</span>
+                    <span className="ml-2 font-medium text-neutral-900">
+                      {selectedAsset.holder.division || '-'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-neutral-500">Email:</span>
+                    <span className="ml-2 font-medium text-neutral-900">
+                      {selectedAsset.holder.email || '-'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-neutral-500">Telepon:</span>
+                    <span className="ml-2 font-medium text-neutral-900">
+                      {selectedAsset.holder.phone || '-'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Asset photos: min 1, max 4 */}
             <div className="border-t border-gray-100 pt-6 space-y-4">
               <PhotoUpload
@@ -570,101 +615,87 @@ const AssignAsset = memo(() => {
               </div>
             )}
 
-            {/* Holder Information */}
-            {(
+            {/* Holder Information (editable form - only for Assign/ReAssign) */}
+            {!isUpdateAction && (
               <div className="border-t border-gray-100 pt-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h4 className="text-md font-semibold text-neutral-900">
-                        Holder Information
-                      </h4>
-                      {formData.holderFullName && !isUpdateAction && (
-                        <button
-                          type="button"
-                          onClick={handleClearHolder}
-                          className="text-sm text-red-600 hover:text-red-800"
-                        >
-                          Clear Holder
-                        </button>
-                      )}
-                    </div>
-                    
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <Input
-                          label="Nama Lengkap"
-                          name="holderFullName"
-                          value={formData.holderFullName}
-                          onChange={handleChange}
-                          error={errors.holderFullName}
-                          required
-                          disabled={isUpdateAction}
-                          placeholder="Ahmad Santoso"
-                        />
-                        <Input
-                          label="NIP"
-                          name="holderNip"
-                          value={formData.holderNip}
-                          onChange={handleChange}
-                          error={errors.holderNip}
-                          required
-                          disabled={isUpdateAction}
-                          placeholder="198501012010011001"
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <Input
-                          label="Three Letter Code Cabang"
-                          name="holderBranchCode"
-                          value={formData.holderBranchCode}
-                          onChange={handleChange}
-                          error={errors.holderBranchCode}
-                          required
-                          maxLength={3}
-                          disabled={isUpdateAction}
-                          placeholder="JKT"
-                        />
-                        <Input
-                          label="Divisi/Unit Kerja"
-                          name="holderDivision"
-                          value={formData.holderDivision}
-                          onChange={handleChange}
-                          error={errors.holderDivision}
-                          required
-                          disabled={isUpdateAction}
-                          placeholder="IT Operations"
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <Input
-                          label="Email"
-                          name="holderEmail"
-                          type="email"
-                          value={formData.holderEmail}
-                          onChange={handleChange}
-                          error={errors.holderEmail}
-                          required
-                          disabled={isUpdateAction}
-                          placeholder="ahmad.santoso@company.com"
-                        />
-                        <Input
-                          label="Nomor Telepon"
-                          name="holderPhone"
-                          value={formData.holderPhone}
-                          onChange={handleChange}
-                          error={errors.holderPhone}
-                          required
-                          disabled={isUpdateAction}
-                          placeholder="+62 812 3456 7890"
-                        />
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="text-md font-semibold text-neutral-900">
+                    Holder Information
+                  </h4>
+                  {formData.holderFullName && (
+                    <button
+                      type="button"
+                      onClick={handleClearHolder}
+                      className="text-sm text-red-600 hover:text-red-800"
+                    >
+                      Clear Holder
+                    </button>
+                  )}
+                </div>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <Input
+                      label="Nama Lengkap"
+                      name="holderFullName"
+                      value={formData.holderFullName}
+                      onChange={handleChange}
+                      error={errors.holderFullName}
+                      required
+                      placeholder="Ahmad Santoso"
+                    />
+                    <Input
+                      label="NIP"
+                      name="holderNip"
+                      value={formData.holderNip}
+                      onChange={handleChange}
+                      error={errors.holderNip}
+                      required
+                      placeholder="198501012010011001"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <Input
+                      label="Three Letter Code Cabang"
+                      name="holderBranchCode"
+                      value={formData.holderBranchCode}
+                      onChange={handleChange}
+                      error={errors.holderBranchCode}
+                      required
+                      maxLength={3}
+                      placeholder="JKT"
+                    />
+                    <Input
+                      label="Divisi/Unit Kerja"
+                      name="holderDivision"
+                      value={formData.holderDivision}
+                      onChange={handleChange}
+                      error={errors.holderDivision}
+                      required
+                      placeholder="IT Operations"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <Input
+                      label="Email"
+                      name="holderEmail"
+                      type="email"
+                      value={formData.holderEmail}
+                      onChange={handleChange}
+                      error={errors.holderEmail}
+                      required
+                      placeholder="ahmad.santoso@company.com"
+                    />
+                    <Input
+                      label="Nomor Telepon"
+                      name="holderPhone"
+                      value={formData.holderPhone}
+                      onChange={handleChange}
+                      error={errors.holderPhone}
+                      required
+                      placeholder="+62 812 3456 7890"
+                    />
                   </div>
                 </div>
-                {isUpdateAction && (
-                  <p className="mt-3 text-sm text-neutral-500">
-                    Holder Information terkunci pada mode Update.
-                  </p>
-                )}
               </div>
             )}
 
