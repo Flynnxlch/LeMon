@@ -101,6 +101,7 @@ const AssetDetailPanel = memo(({ asset, onClose, onTransfer, canTransfer = false
                 asset.status === 'Perlu Diupdate' ? 'bg-amber-50 text-amber-700' :
                 asset.status === 'Diperbaiki' ? 'bg-blue-50 text-blue-700' :
                 asset.status === 'Rusak' ? 'bg-red-50 text-red-700' :
+                asset.status === 'Dalam Perbaikan' ? 'bg-amber-100 text-amber-800' :
                 asset.status === 'Hilang' ? 'bg-neutral-200 text-neutral-700' :
                 'bg-neutral-100 text-neutral-700'
               }`}>

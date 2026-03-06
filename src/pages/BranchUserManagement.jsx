@@ -275,17 +275,17 @@ const BranchUserManagement = memo(() => {
                   Add Branch
                 </Button>
               </div>
-              <div className="overflow-x-auto -mx-2">
+              <div className="overflow-x-auto -mx-2 max-h-44 overflow-y-auto scrollbar-hide" style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
                 <table className="min-w-full text-sm">
-                  <thead>
+                  <thead className="sticky top-0 bg-white z-10">
                     <tr className="border-b border-neutral-200">
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider bg-white">
                         Branch Name
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider bg-white">
                         Location
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider w-24">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider w-24 bg-white">
                         Actions
                       </th>
                     </tr>
@@ -363,26 +363,26 @@ const BranchUserManagement = memo(() => {
                   )}
                 </div>
               </div>
-              <div className="overflow-x-auto -mx-2">
+              <div className="overflow-x-auto -mx-2 max-h-44 overflow-y-auto scrollbar-hide" style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
                 <table className="min-w-full text-sm">
-                  <thead>
+                  <thead className="sticky top-0 bg-white z-10">
                     <tr className="border-b border-neutral-200">
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider bg-white">
                         Name
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider bg-white">
                         Email
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider bg-white">
                         Role
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider bg-white">
                         Assigned Branch
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider bg-white">
                         Status
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider bg-white">
                         Actions
                       </th>
                     </tr>
@@ -470,26 +470,26 @@ const BranchUserManagement = memo(() => {
               </span>
             )}
           </h2>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto max-h-44 overflow-y-auto scrollbar-hide" style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
             <table className="min-w-full text-sm">
-              <thead>
+              <thead className="sticky top-0 bg-white z-10">
                 <tr className="border-b border-neutral-200">
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider bg-white">
                     Request Info
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider bg-white">
                     NIP
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider bg-white">
                     Assign to Branch
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider bg-white">
                     Date
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider bg-white">
                     Status
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider bg-white">
                     Actions
                   </th>
                 </tr>
@@ -568,23 +568,23 @@ const BranchUserManagement = memo(() => {
               </span>
             )}
           </h2>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto max-h-44 overflow-y-auto scrollbar-hide" style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
             <table className="min-w-full text-sm">
-              <thead>
+              <thead className="sticky top-0 bg-white z-10">
                 <tr className="border-b border-neutral-200">
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider bg-white">
                     Name
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider bg-white">
                     Email
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider bg-white">
                     NIP
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider bg-white">
                     Date
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider bg-white">
                     Actions
                   </th>
                 </tr>

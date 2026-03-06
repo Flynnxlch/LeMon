@@ -190,6 +190,23 @@ export const api = {
         body: JSON.stringify(bodyOrFormData),
       });
     },
+    getRepair: (id) => request(`assets/${id}/repair`).then((res) => res?.data ?? null),
+    startRepair: (id, body) =>
+      request(`assets/${id}/start-repair`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      }),
+    completeRepair: (id, bodyOrFormData) => {
+      if (bodyOrFormData instanceof FormData) {
+        return request(`assets/${id}/complete-repair`, { method: 'POST', body: bodyOrFormData });
+      }
+      return request(`assets/${id}/complete-repair`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bodyOrFormData),
+      });
+    },
   },
   transferRequests: {
     list: (status) =>

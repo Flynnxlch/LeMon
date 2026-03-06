@@ -31,6 +31,7 @@ const getStatusCounts = (assets) => ({
   'Perlu Diupdate': assets.filter((a) => a.status === 'Perlu Diupdate').length,
   Diperbaiki: assets.filter((a) => a.status === 'Diperbaiki').length,
   Rusak: assets.filter((a) => a.status === 'Rusak').length,
+  'Dalam Perbaikan': assets.filter((a) => a.status === 'Dalam Perbaikan').length,
   Hilang: assets.filter((a) => a.status === 'Hilang').length,
 });
 

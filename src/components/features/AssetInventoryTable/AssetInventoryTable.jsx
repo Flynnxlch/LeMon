@@ -1,17 +1,21 @@
-import { memo, useCallback, useMemo, useState } from 'react';
-import { HiSearch } from 'react-icons/hi';
+import { memo, useCallback, useMemo, useState, useEffect } from 'react';
+import { HiSearch, HiChevronLeft, HiChevronRight } from 'react-icons/hi';
 import { STATUS_LABELS, truncate } from '../../../utils/assetConstants';
 import Card from '../../common/Card/Card';
+import Button from '../../common/Button/Button';
+
+const PAGE_SIZE = 10;
 
 const AssetInventoryTable = memo(({ 
   assets = [], 
   onSelectAsset, 
   onAssetClick,
   selectedAssetId,
-  filterByStatus = ['Available', 'Perlu Diupdate', 'Diperbaiki', 'Rusak', 'Hilang']
+  filterByStatus = ['Available', 'Perlu Diupdate', 'Diperbaiki', 'Rusak', 'Dalam Perbaikan', 'Hilang']
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Filter and search assets
   const filteredAssets = useMemo(() => {
@@ -41,6 +45,20 @@ const AssetInventoryTable = memo(({
     return filtered;
   }, [assets, filterByStatus, statusFilter, searchQuery]);
 
+  const totalPages = Math.max(1, Math.ceil(filteredAssets.length / PAGE_SIZE));
+  const paginatedAssets = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return filteredAssets.slice(start, start + PAGE_SIZE);
+  }, [filteredAssets, currentPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, statusFilter]);
+
+  const goToPage = useCallback((page) => {
+    setCurrentPage((p) => Math.max(1, Math.min(page, totalPages)));
+  }, [totalPages]);
+
   // Count by status
   const statusCounts = useMemo(() => {
     const counts = {
@@ -63,6 +81,7 @@ const AssetInventoryTable = memo(({
       case 'Diperbaiki':
         return 'bg-blue-50 text-blue-700';
       case 'Rusak':
+      case 'Dalam Perbaikan':
         return 'bg-red-50 text-red-700';
       case 'Hilang':
         return 'bg-neutral-200 text-neutral-700';
@@ -137,8 +156,8 @@ const AssetInventoryTable = memo(({
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-100">
-              {filteredAssets.length > 0 ? (
-                filteredAssets.map((asset) => (
+              {paginatedAssets.length > 0 ? (
+                paginatedAssets.map((asset) => (
                   <tr 
                     key={asset.id}
                     onClick={() => handleRowClick(asset)}
@@ -195,13 +214,38 @@ const AssetInventoryTable = memo(({
           </table>
         </div>
 
-        {/* Results Summary */}
+        {/* Pagination */}
         {filteredAssets.length > 0 && (
-          <div className="px-6 py-3 bg-neutral-50 rounded-lg">
+          <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-neutral-200">
             <p className="text-sm text-neutral-500">
-              Showing <span className="font-semibold text-neutral-900">{filteredAssets.length}</span> asset(s)
-              {searchQuery && <span> matching "{searchQuery}"</span>}
+              Menampilkan <span className="font-medium text-neutral-900">{(currentPage - 1) * PAGE_SIZE + 1}</span>–<span className="font-medium text-neutral-900">{Math.min(currentPage * PAGE_SIZE, filteredAssets.length)}</span> dari <span className="font-medium text-neutral-900">{filteredAssets.length}</span> aset
+              {searchQuery && <span> (filter: &quot;{searchQuery}&quot;)</span>}
             </p>
+            {totalPages > 1 && (
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => goToPage(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  aria-label="Halaman sebelumnya"
+                >
+                  <HiChevronLeft className="w-5 h-5" />
+                </Button>
+                <span className="text-sm text-neutral-600 px-2">
+                  Halaman {currentPage} dari {totalPages}
+                </span>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => goToPage(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  aria-label="Halaman berikutnya"
+                >
+                  <HiChevronRight className="w-5 h-5" />
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </div>

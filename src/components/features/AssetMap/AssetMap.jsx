@@ -71,6 +71,7 @@ const createCustomIcon = (status) => {
     'Perlu Diupdate': '#f59e0b',
     Diperbaiki: '#3b82f6',
     Rusak: '#dc2626',
+    'Dalam Perbaikan': '#d97706',
     Hilang: '#737373',
   };
 
@@ -244,6 +245,7 @@ const AssetMap = memo(({ assets = [], selectedAsset, onClearSelection, branchNam
             <option value="Perlu Diupdate">{STATUS_LABELS['Perlu Diupdate']} ({allAssets.filter(a => a.status === 'Perlu Diupdate').length})</option>
             <option value="Diperbaiki">{STATUS_LABELS.Diperbaiki} ({allAssets.filter(a => a.status === 'Diperbaiki').length})</option>
             <option value="Rusak">{STATUS_LABELS.Rusak} ({allAssets.filter(a => a.status === 'Rusak').length})</option>
+            <option value="Dalam Perbaikan">{STATUS_LABELS['Dalam Perbaikan']} ({allAssets.filter(a => a.status === 'Dalam Perbaikan').length})</option>
             <option value="Hilang">{STATUS_LABELS.Hilang} ({allAssets.filter(a => a.status === 'Hilang').length})</option>
           </select>
         </div>
@@ -334,6 +336,7 @@ const AssetMap = memo(({ assets = [], selectedAsset, onClearSelection, branchNam
                         asset.status === 'Perlu Diupdate' ? 'bg-amber-50 text-amber-700' :
                         asset.status === 'Diperbaiki' ? 'bg-blue-50 text-blue-700' :
                         asset.status === 'Rusak' ? 'bg-red-50 text-red-700' :
+                        asset.status === 'Dalam Perbaikan' ? 'bg-amber-100 text-amber-800' :
                         asset.status === 'Hilang' ? 'bg-neutral-200 text-neutral-700' :
                         'bg-neutral-100 text-neutral-700'
                       }`}>
@@ -387,6 +390,7 @@ const AssetMap = memo(({ assets = [], selectedAsset, onClearSelection, branchNam
                     selectedAssetWithAddress.status === 'Perlu Diupdate' ? 'bg-amber-50 text-amber-700' :
                     selectedAssetWithAddress.status === 'Diperbaiki' ? 'bg-blue-50 text-blue-700' :
                     selectedAssetWithAddress.status === 'Rusak' ? 'bg-red-50 text-red-700' :
+                    selectedAssetWithAddress.status === 'Dalam Perbaikan' ? 'bg-amber-100 text-amber-800' :
                     selectedAssetWithAddress.status === 'Hilang' ? 'bg-neutral-200 text-neutral-700' :
                     'bg-neutral-100 text-neutral-700'
                   }`}>

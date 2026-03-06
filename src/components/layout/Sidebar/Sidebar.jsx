@@ -11,7 +11,8 @@ import {
   HiSwitchHorizontal,
   HiClipboardList,
   HiBadgeCheck,
-  HiClock
+  HiClock,
+  HiExclamation
 } from 'react-icons/hi';
 import { useAuth } from '../../../context/AuthContext';
 
@@ -38,6 +39,7 @@ const Sidebar = memo(({ isOpen, onClose }) => {
       { path: '/transfer-requests', label: 'Transfer Requests', icon: HiSwitchHorizontal },
       { path: '/reassignment-requests', label: 'Reassignment Requests', icon: HiClipboardList },
       { path: '/asset-approval', label: 'Asset Approval', icon: HiBadgeCheck },
+      { path: '/asset-rusak', label: 'Asset Rusak', icon: HiExclamation },
     ];
     
     if (userRole === 'Admin Pusat') {

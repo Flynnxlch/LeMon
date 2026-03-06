@@ -4,11 +4,12 @@ export const STATUS_LABELS = {
   'Perlu Diupdate': 'Perlu Diupdate',
   Diperbaiki: 'Diperbaiki',
   Rusak: 'Rusak',
+  'Dalam Perbaikan': 'Dalam Perbaikan',
   Hilang: 'Hilang',
 };
 
 /** All status values for filtering/display */
-export const STATUS_OPTIONS = ['Available', 'Perlu Diupdate', 'Diperbaiki', 'Rusak', 'Hilang'];
+export const STATUS_OPTIONS = ['Available', 'Perlu Diupdate', 'Diperbaiki', 'Rusak', 'Dalam Perbaikan', 'Hilang'];
 
 /** Jangka waktu update: value = days */
 export const UPDATE_INTERVAL_OPTIONS = [

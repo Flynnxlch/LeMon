@@ -15,6 +15,7 @@ const TransferRequests = lazy(() => import('./pages/TransferRequests'));
 const ReassignmentRequests = lazy(() => import('./pages/ReassignmentRequests'));
 const AssetApproval = lazy(() => import('./pages/AssetApproval'));
 const ReminderSettings = lazy(() => import('./pages/ReminderSettings'));
+const AssetRusak = lazy(() => import('./pages/AssetRusak'));
 
 // Loading component
 const PageLoader = () => (
@@ -120,6 +121,17 @@ function App() {
             <ProtectedRoute requiredRole="Admin Pusat">
               <ErrorBoundary>
                 <ReminderSettings />
+              </ErrorBoundary>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/asset-rusak"
+          element={
+            <ProtectedRoute requiredRole="Admin Pusat">
+              <ErrorBoundary>
+                <AssetRusak />
               </ErrorBoundary>
             </ProtectedRoute>
           }

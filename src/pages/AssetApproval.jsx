@@ -1,5 +1,5 @@
-import { memo, useCallback, useMemo, useState } from 'react';
-import { HiCheck, HiX } from 'react-icons/hi';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { HiCheck, HiX, HiChevronLeft, HiChevronRight } from 'react-icons/hi';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import Button from '../components/common/Button/Button';
 import Card from '../components/common/Card/Card';
@@ -37,11 +37,14 @@ const formatDate = (dateString) => {
   });
 };
 
+const ITEMS_PER_PAGE = 10;
+
 const AssetApproval = memo(() => {
   const toast = useToast();
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [editForm, setEditForm] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const { data: requests = [], isLoading: loading } = useAssetRequests();
   const approveMutation = useApproveAssetRequest();
@@ -51,6 +54,16 @@ const AssetApproval = memo(() => {
     if (statusFilter === 'all') return requests;
     return requests.filter((r) => r.status === statusFilter);
   }, [requests, statusFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredRequests.length / ITEMS_PER_PAGE));
+  const paginatedRequests = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredRequests.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredRequests, currentPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter]);
 
   const statusCounts = useMemo(
     () => ({
@@ -78,6 +91,10 @@ const AssetApproval = memo(() => {
     setSelectedRequest(null);
     setEditForm(null);
   }, []);
+
+  const goToPage = useCallback((page) => {
+    setCurrentPage((p) => Math.max(1, Math.min(page, totalPages)));
+  }, [totalPages]);
 
   const handleEditChange = useCallback((e) => {
     const { name, value } = e.target;
@@ -177,8 +194,8 @@ const AssetApproval = memo(() => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-neutral-200">
-              {filteredRequests.length > 0 ? (
-                filteredRequests.map((request) => (
+              {paginatedRequests.length > 0 ? (
+                paginatedRequests.map((request) => (
                   <Motion.tr
                     key={request.id}
                     layout
@@ -220,6 +237,22 @@ const AssetApproval = memo(() => {
             </tbody>
           </table>
         </div>
+        {filteredRequests.length > 0 && totalPages > 1 && (
+          <div className="flex flex-wrap items-center justify-between gap-4 px-6 py-4 border-t border-neutral-200">
+            <p className="text-sm text-neutral-500">
+              Menampilkan {(currentPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filteredRequests.length)} dari {filteredRequests.length}
+            </p>
+            <div className="flex items-center gap-2">
+              <Button variant="secondary" size="sm" onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1} aria-label="Previous">
+                <HiChevronLeft className="w-5 h-5" />
+              </Button>
+              <span className="text-sm text-neutral-600 px-2">Halaman {currentPage} dari {totalPages}</span>
+              <Button variant="secondary" size="sm" onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages} aria-label="Next">
+                <HiChevronRight className="w-5 h-5" />
+              </Button>
+            </div>
+          </div>
+        )}
       </Card>
 
       <AnimatePresence>

@@ -10,6 +10,7 @@ const statusClasses = {
   'Perlu Diupdate': 'bg-amber-50 text-amber-700',
   Diperbaiki: 'bg-blue-50 text-blue-700',
   Rusak: 'bg-red-50 text-red-700',
+  'Dalam Perbaikan': 'bg-amber-100 text-amber-800',
   Hilang: 'bg-neutral-200 text-neutral-700',
 };
 
@@ -151,6 +152,7 @@ const AssetTable = memo(
             <option value="Perlu Diupdate">{STATUS_LABELS['Perlu Diupdate']}</option>
             <option value="Diperbaiki">{STATUS_LABELS.Diperbaiki}</option>
             <option value="Rusak">{STATUS_LABELS.Rusak}</option>
+            <option value="Dalam Perbaikan">{STATUS_LABELS['Dalam Perbaikan']}</option>
             <option value="Hilang">{STATUS_LABELS.Hilang}</option>
           </select>
         </div>

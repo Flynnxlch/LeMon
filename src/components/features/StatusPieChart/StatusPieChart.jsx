@@ -6,14 +6,15 @@ const STATUS_COLORS = {
   'Perlu Diupdate': '#f59e0b',
   Diperbaiki: '#3b82f6',
   Rusak: '#dc2626',
+  'Dalam Perbaikan': '#d97706',
   Hilang: '#737373',
 };
 
-/** Build pie segments from status counts. includePerluDiupdate: false = 4 segments (Available, Diperbaiki, Rusak, Hilang). */
+/** Build pie segments from status counts. includePerluDiupdate: false = 5 segments (Available, Diperbaiki, Rusak, Dalam Perbaikan, Hilang). */
 function buildSegments(byStatus, includePerluDiupdate) {
   const order = includePerluDiupdate
-    ? ['Available', 'Perlu Diupdate', 'Diperbaiki', 'Rusak', 'Hilang']
-    : ['Available', 'Diperbaiki', 'Rusak', 'Hilang'];
+    ? ['Available', 'Perlu Diupdate', 'Diperbaiki', 'Rusak', 'Dalam Perbaikan', 'Hilang']
+    : ['Available', 'Diperbaiki', 'Rusak', 'Dalam Perbaikan', 'Hilang'];
   const total = order.reduce((sum, key) => sum + (byStatus[key] || 0), 0);
   if (total === 0) {
     return [{ label: 'Tidak ada data', value: 1, color: '#e5e7eb', start: 0, sweep: 360 }];
