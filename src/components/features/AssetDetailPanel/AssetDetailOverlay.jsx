@@ -41,10 +41,11 @@ async function reverseGeocode(lat, lng) {
 }
 
 function useReverseGeocode(lat, lng) {
-  const [state, setState] = useState({ address: null, loading: true });
+  const hasCoords = lat != null && lng != null;
+  const [state, setState] = useState({ address: null, loading: !!hasCoords });
   useEffect(() => {
-    if (lat == null || lng == null) {
-      setState({ address: null, loading: false });
+    if (!hasCoords) {
+      queueMicrotask(() => setState({ address: null, loading: false }));
       return;
     }
     let cancelled = false;
@@ -52,8 +53,8 @@ function useReverseGeocode(lat, lng) {
       if (!cancelled) setState({ address, loading: false });
     });
     return () => { cancelled = true; };
-  }, [lat, lng]);
-  return state;
+  }, [lat, lng, hasCoords]);
+  return hasCoords ? state : { address: null, loading: false };
 }
 
 delete L.Icon.Default.prototype._getIconUrl;
@@ -210,13 +211,17 @@ const AssetDetailOverlay = memo(({ isOpen, onClose, asset, pastHolders = [], his
 
   useEffect(() => {
     if (!isOpen) {
-      setActiveTab('current');
-      setMapPoint(null);
+      queueMicrotask(() => {
+        setActiveTab('current');
+        setMapPoint(null);
+      });
     }
   }, [isOpen]);
 
   useEffect(() => {
-    if (activeTab === 'current') setMapPoint(null);
+    if (activeTab === 'current') {
+      queueMicrotask(() => setMapPoint(null));
+    }
   }, [activeTab]);
 
   const handlePastHolderClick = useCallback((holder) => {
