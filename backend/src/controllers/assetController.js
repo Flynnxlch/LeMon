@@ -1,4 +1,5 @@
 import * as assetService from '../services/assetService.js';
+import * as repairService from '../services/repairService.js';
 import { uploadConditionPhotoUrls } from '../middleware/upload.js';
 
 export async function getAssets(req, res, next) {
@@ -129,6 +130,64 @@ export async function assignAsset(req, res, next) {
       return res.status(404).json({ success: false, error: err.message });
     }
     if (err.message === 'Forbidden' || err.message === 'Only Admin Cabang can assign') {
+      return res.status(403).json({ success: false, error: err.message });
+    }
+    next(err);
+  }
+}
+
+export async function getAssetRepair(req, res, next) {
+  try {
+    const repair = await repairService.getActiveRepairByAssetId(req.params.id);
+    res.json({ success: true, data: repair });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function startRepair(req, res, next) {
+  try {
+    const result = await repairService.startRepair(
+      req.params.id,
+      req.body,
+      req.user.role,
+      req.user.id
+    );
+    res.json({ success: true, data: result });
+  } catch (err) {
+    if (err.message === 'Asset not found' || err.message === 'Asset must have status Rusak to start repair') {
+      return res.status(400).json({ success: false, error: err.message });
+    }
+    if (err.message === 'Only Admin Pusat can start repair') {
+      return res.status(403).json({ success: false, error: err.message });
+    }
+    next(err);
+  }
+}
+
+export async function completeRepair(req, res, next) {
+  try {
+    let payload = { ...req.body };
+    if (req.files && req.files.length > 0) {
+      const urls = await uploadConditionPhotoUrls(req);
+      payload.updateImages = urls;
+    }
+    if (payload.latitude !== undefined && payload.latitude !== '') payload.latitude = Number(payload.latitude);
+    if (payload.longitude !== undefined && payload.longitude !== '') payload.longitude = Number(payload.longitude);
+    if (payload.returnToPreviousUser === 'true') payload.returnToPreviousUser = true;
+    if (payload.returnToPreviousUser === 'false') payload.returnToPreviousUser = false;
+    const result = await repairService.completeRepair(
+      req.params.id,
+      payload,
+      req.user.role,
+      req.user.id
+    );
+    res.json({ success: true, data: result });
+  } catch (err) {
+    if (err.message === 'Asset not found' || err.message === 'Asset must have status Dalam Perbaikan to complete repair' || err.message === 'No active repair record found for this asset' || err.message === 'Condition photos: minimum 1, maximum 4' || err.message === 'Holder name is required when reassigning') {
+      return res.status(400).json({ success: false, error: err.message });
+    }
+    if (err.message === 'Only Admin Pusat can complete repair') {
       return res.status(403).json({ success: false, error: err.message });
     }
     next(err);

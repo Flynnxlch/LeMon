@@ -12,6 +12,7 @@ function mapTransferRequest(tr) {
     toBranchId: tr.toBranchId,
     toBranchName: tr.toBranch?.name,
     notes: tr.notes,
+    purpose: tr.purpose ?? 'normal',
     status: tr.status,
     requestDate: tr.requestDate,
     requestedBy: tr.requestedBy?.name,
@@ -33,6 +34,7 @@ export async function getTransferRequests(status) {
       fromBranchId: true,
       toBranchId: true,
       notes: true,
+      purpose: true,
       status: true,
       requestDate: true,
       requestedById: true,
@@ -64,6 +66,7 @@ export async function createTransferRequest(data, userId, userRole, userBranchId
       fromBranchId: asset.branchId,
       toBranchId: data.toBranchId,
       notes: data.notes,
+      purpose: data.purpose === 'repair' ? 'repair' : 'normal',
       requestedById: userId,
       status: 'Pending',
     },
@@ -73,6 +76,7 @@ export async function createTransferRequest(data, userId, userRole, userBranchId
       fromBranchId: true,
       toBranchId: true,
       notes: true,
+      purpose: true,
       status: true,
       requestDate: true,
       requestedById: true,
@@ -89,14 +93,18 @@ export async function createTransferRequest(data, userId, userRole, userBranchId
 export async function approveTransferRequest(requestId) {
   const tr = await prisma.transferRequest.findUnique({
     where: { id: requestId },
-    select: { id: true, assetId: true, toBranchId: true, status: true },
+    select: { id: true, assetId: true, toBranchId: true, status: true, purpose: true },
   });
   if (!tr) throw new Error('Transfer request not found');
   if (tr.status !== 'Pending') throw new Error('Request already processed');
+  const isRepairTransfer = tr.purpose === 'repair';
   await prisma.$transaction([
     prisma.asset.update({
       where: { id: tr.assetId },
-      data: { branchId: tr.toBranchId },
+      data: {
+        branchId: tr.toBranchId,
+        ...(isRepairTransfer && { status: 'Dalam Perbaikan' }),
+      },
     }),
     prisma.transferRequest.update({
       where: { id: requestId },

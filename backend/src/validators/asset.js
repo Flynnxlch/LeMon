@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const statusOptions = ['Available', 'Perlu Diupdate', 'Diperbaiki', 'Rusak', 'Hilang'];
+const statusOptions = ['Available', 'Perlu Diupdate', 'Diperbaiki', 'Rusak', 'Dalam Perbaikan', 'Hilang'];
 
 export const createAssetSchema = z.object({
   serialNumber: z.string().min(1).max(100),
@@ -51,3 +51,30 @@ export const getAssetsQuerySchema = z.object({
   status: z.enum(statusOptions).optional(),
   excludeDeleted: z.coerce.boolean().optional(),
 }).strict();
+
+export const startRepairSchema = z.object({
+  repairType: z.enum(['at_branch', 'transfer']),
+  toBranchId: z.string().min(1).optional(), // required when repairType === 'transfer'
+  notes: z.string().max(500).optional(),
+}).strict().refine((data) => data.repairType !== 'transfer' || (data.toBranchId && data.toBranchId.length > 0), {
+  message: 'toBranchId is required when repairType is transfer',
+  path: ['toBranchId'],
+});
+
+export const completeRepairSchema = z.object({
+  returnToPreviousUser: z.boolean().optional(),
+  updateImages: z.array(z.string().url()).min(1).max(4),
+  latitude: z.number().optional().nullable(),
+  longitude: z.number().optional().nullable(),
+  address: z.string().max(500).optional().nullable(),
+  holderFullName: z.string().max(200).optional(),
+  holderNip: z.string().max(50).optional().nullable(),
+  holderBranchCode: z.string().max(20).optional().nullable(),
+  holderBranchId: z.string().optional().nullable(),
+  holderDivision: z.string().max(100).optional().nullable(),
+  holderEmail: z.string().email().max(255).optional().nullable(),
+  holderPhone: z.string().max(30).optional().nullable(),
+}).strict().refine((data) => data.returnToPreviousUser === true || (data.holderFullName && String(data.holderFullName).trim().length > 0), {
+  message: 'holderFullName is required when not returning to previous user',
+  path: ['holderFullName'],
+});

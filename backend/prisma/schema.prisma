@@ -47,9 +47,11 @@ model Branch {
   assets           Asset[]
   accountRequests  AccountRequest[]
   transferFrom     TransferRequest[] @relation("FromBranch")
-  transferTo      TransferRequest[] @relation("ToBranch")
-  assetRequests   AssetRequest[]
+  transferTo       TransferRequest[] @relation("ToBranch")
+  assetRequests    AssetRequest[]
   holderAssignments AssetAssignment[]
+  repairFrom       AssetRepair[]     @relation("RepairFromBranch")
+  repairTo         AssetRepair[]     @relation("RepairToBranch")
 }
 
 model Asset {
@@ -60,7 +62,7 @@ model Asset {
   model        String
   detail       String?
   branchId     String
-  status       String    @default("Available") // Available | Perlu Diupdate | Diperbaiki | Rusak | Hilang
+  status       String    @default("Available") // Available | Perlu Diupdate | Diperbaiki | Rusak | Dalam Perbaikan | Hilang
   photoUrl     String?
   updateImages Json?    // array of image URLs (last assign/update photos, 1-4)
   latitude     Float?
@@ -74,6 +76,7 @@ model Asset {
   assignments          AssetAssignment[]
   transferRequests     TransferRequest[]
   reassignmentRequests ReassignmentRequest[]
+  repairs              AssetRepair[]
 
   @@index([branchId])
   @@index([deletedAt])
@@ -111,6 +114,7 @@ model TransferRequest {
   fromBranchId String
   toBranchId  String
   notes       String
+  purpose     String   @default("normal") // normal | repair (transfer sementara untuk perbaikan)
   requestedById String
   status      String   @default("Pending") // Pending | Approved | Rejected
   requestDate DateTime @default(now())
@@ -127,6 +131,26 @@ model TransferRequest {
   @@index([assetId])
   @@index([fromBranchId])
   @@index([toBranchId])
+}
+
+model AssetRepair {
+  id                String    @id @default(cuid())
+  assetId           String
+  repairType        String    // at_branch | transfer
+  fromBranchId      String    // cabang saat asset rusak
+  toBranchId        String?   // cabang perbaikan (jika transfer)
+  transferRequestId String?   // link ke TransferRequest jika transfer
+  status            String    @default("in_repair") // in_repair | completed
+  completedAt       DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  asset      Asset  @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  fromBranch Branch @relation("RepairFromBranch", fields: [fromBranchId], references: [id], onDelete: Restrict)
+  toBranch   Branch? @relation("RepairToBranch", fields: [toBranchId], references: [id], onDelete: SetNull)
+
+  @@index([assetId])
+  @@index([status])
 }
 
 model ReassignmentRequest {

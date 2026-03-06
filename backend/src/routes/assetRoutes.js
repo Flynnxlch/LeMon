@@ -9,11 +9,13 @@ import {
   updateAssetSchema,
   assignAssetSchema,
   getAssetsQuerySchema,
+  startRepairSchema,
 } from '../validators/asset.js';
 
 const router = Router();
 
 router.get('/', authMiddleware, validateQuery(getAssetsQuerySchema), assetController.getAssets);
+router.get('/:id/repair', authMiddleware, assetController.getAssetRepair);
 router.get('/:id', authMiddleware, assetController.getAssetById);
 router.post(
   '/',
@@ -81,5 +83,27 @@ router.post(
   coerceAssignBody,
   validateBody(assignAssetSchema),
   assetController.assignAsset
+);
+
+router.post(
+  '/:id/start-repair',
+  authMiddleware,
+  requireRole('Admin Pusat'),
+  validateBody(startRepairSchema),
+  assetController.startRepair
+);
+router.post(
+  '/:id/complete-repair',
+  authMiddleware,
+  requireRole('Admin Pusat'),
+  uploadConditionPhotos,
+  validateImageMagicArray,
+  (req, res, next) => {
+    const b = req.body || {};
+    if (b.latitude !== undefined && b.latitude !== '') req.body.latitude = Number(b.latitude);
+    if (b.longitude !== undefined && b.longitude !== '') req.body.longitude = Number(b.longitude);
+    next();
+  },
+  assetController.completeRepair
 );
 export default router;
