@@ -1,7 +1,7 @@
-import { memo, useMemo, useState, useCallback } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { HiSearch } from 'react-icons/hi';
-import Card from '../../common/Card/Card';
 import { STATUS_LABELS, truncate } from '../../../utils/assetConstants';
+import Card from '../../common/Card/Card';
 
 const AssetInventoryTable = memo(({ 
   assets = [], 
@@ -98,31 +98,22 @@ const AssetInventoryTable = memo(({
             />
           </div>
 
-          {/* Status Filter */}
-          <div className="flex gap-2 flex-wrap">
-            <button
-              onClick={() => setStatusFilter('all')}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                statusFilter === 'all'
-                  ? 'bg-neutral-900 text-white'
-                  : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
-              }`}
+          {/* Status Filter - Dropdown */}
+          <div className="w-full sm:w-56">
+            <label htmlFor="status-filter" className="sr-only">Filter by status</label>
+            <select
+              id="status-filter"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full px-3 py-2 border border-neutral-300 rounded-lg bg-white text-neutral-900 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
             >
-              All ({statusCounts.all})
-            </button>
-            {filterByStatus.map((status) => (
-              <button
-                key={status}
-                onClick={() => setStatusFilter(status)}
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  statusFilter === status
-                    ? 'bg-neutral-900 text-white'
-                    : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
-                }`}
-              >
-                {STATUS_LABELS[status] ?? status} ({statusCounts[status] || 0})
-              </button>
-            ))}
+              <option value="all">Semua Status ({statusCounts.all})</option>
+              {filterByStatus.map((status) => (
+                <option key={status} value={status}>
+                  {STATUS_LABELS[status] ?? status} ({statusCounts[status] || 0})
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 

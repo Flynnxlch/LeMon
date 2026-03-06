@@ -158,10 +158,10 @@ const AssetDetailPanel = memo(({ asset, onClose, onTransfer, canTransfer = false
               </div>
               <div>
                 <span className="text-sm text-neutral-500 block mb-1">
-                  Kode Cabang
+                  Cabang
                 </span>
                 <span className="text-base font-medium text-neutral-900">
-                  {asset.holder.branchCode}
+                  {asset.holder.branchName || asset.holder.branchCode || '—'}
                 </span>
               </div>
               <div>

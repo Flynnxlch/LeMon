@@ -50,13 +50,14 @@ const AssignAsset = memo(() => {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const updateVariantRef = useRef('Available'); // 'Available' | 'Rusak' for update submit
+  const formRef = useRef(null);
 
   const assetParams = useMemo(() => {
     if (!user?.branch_id) return null;
     return { branchId: user.branch_id };
-  }, [user?.branch_id]);
+  }, [user.branch_id]);
 
-  const { data: rawAssets = [], isLoading: loading } = useAssets(assetParams, {
+  const { data: rawAssets = [] } = useAssets(assetParams, {
     enabled: !!user?.branch_id,
   });
 
@@ -238,9 +239,6 @@ const AssignAsset = memo(() => {
       if (!formData.holderNip) {
         newErrors.holderNip = 'NIP is required';
       }
-      if (!formData.holderBranchCode) {
-        newErrors.holderBranchCode = 'Branch code is required';
-      }
       if (!formData.holderDivision) {
         newErrors.holderDivision = 'Division is required';
       }
@@ -271,41 +269,61 @@ const AssignAsset = memo(() => {
     const now = new Date();
     const dueUpdate = addDaysToDate(now, intervalDays);
 
-    // Reassign: submit request for Admin Pusat approval
+    const lat = formData.latitude ? parseFloat(formData.latitude) : null;
+    const lng = formData.longitude ? parseFloat(formData.longitude) : null;
+
+    // Reassign: submit request for Admin Pusat approval (with location + photos)
     if (activeAction === 'reassign') {
+      const reassignPayload = {
+        assetId: selectedAsset.id,
+        newHolderFullName: formData.holderFullName,
+        newHolderNip: formData.holderNip || undefined,
+        newHolderBranchId: user?.branch_id || undefined,
+        newHolderDivision: formData.holderDivision || undefined,
+        newHolderEmail: formData.holderEmail || undefined,
+        newHolderPhone: formData.holderPhone || undefined,
+        newHolderLatitude: lat,
+        newHolderLongitude: lng,
+        notes: formData.reassignReason?.trim() || undefined,
+      };
+      const reassignBodyOrFormData =
+        photos.length > 0 && photos.every((p) => p.file)
+          ? (() => {
+              const fd = new FormData();
+              Object.entries(reassignPayload).forEach(([k, v]) => {
+                if (v != null && v !== '') {
+                  const val = v instanceof Date ? v.toISOString() : (typeof v === 'object' ? JSON.stringify(v) : String(v));
+                  fd.append(k, val);
+                }
+              });
+              photos.forEach((p) => p.file && fd.append('photos', p.file));
+              return fd;
+            })()
+          : reassignPayload;
       api.reassignmentRequests
-        .create({
-          assetId: selectedAsset.id,
-          newHolderFullName: formData.holderFullName,
-          newHolderNip: formData.holderNip || undefined,
-          newHolderBranchCode: formData.holderBranchCode || undefined,
-          newHolderDivision: formData.holderDivision || undefined,
-          newHolderEmail: formData.holderEmail || undefined,
-          newHolderPhone: formData.holderPhone || undefined,
-          notes: formData.reassignReason?.trim() || undefined,
-        })
+        .create(reassignBodyOrFormData)
         .then(() => {
-          invalidateData('reassignmentRequests');
-          toast.success('Permintaan reassignment telah dikirim. Menunggu persetujuan Admin Pusat.');
           setSelectedAssetId('');
           setActiveAsset(null);
           setIsFormModalOpen(false);
           resetFormState();
+          setIsSubmitting(false);
+          toast.success('Permintaan reassignment telah dikirim. Menunggu persetujuan Admin Pusat.');
+          invalidateData('reassignmentRequests');
           refetchAssets();
         })
-        .catch((err) => toast.error(err.message || 'Gagal mengirim permintaan reassignment.'))
-        .finally(() => setIsSubmitting(false));
+        .catch((err) => {
+          setIsSubmitting(false);
+          toast.error(err.message || 'Gagal mengirim permintaan reassignment.');
+        });
       return;
     }
-
-    const lat = formData.latitude ? parseFloat(formData.latitude) : null;
-    const lng = formData.longitude ? parseFloat(formData.longitude) : null;
 
     if (activeAction === 'assign') {
       const assignPayload = {
         holderFullName: formData.holderFullName,
         holderNip: formData.holderNip || undefined,
-        holderBranchCode: formData.holderBranchCode || undefined,
+        holderBranchId: user?.branch_id || undefined,
         holderDivision: formData.holderDivision || undefined,
         holderEmail: formData.holderEmail || undefined,
         holderPhone: formData.holderPhone || undefined,
@@ -330,16 +348,19 @@ const AssignAsset = memo(() => {
       api.assets
         .assign(selectedAsset.id, bodyOrFormData)
         .then(() => {
-          invalidateData('assets');
-          toast.success(`Asset ${selectedAsset.serialNumber} telah di-assign. Due Update: ${new Date(dueUpdate).toLocaleDateString('id-ID')}.`);
           setSelectedAssetId('');
           setActiveAsset(null);
           setIsFormModalOpen(false);
           resetFormState();
+          setIsSubmitting(false);
+          toast.success(`Asset ${selectedAsset.serialNumber} telah di-assign. Due Update: ${new Date(dueUpdate).toLocaleDateString('id-ID')}.`);
+          invalidateData('assets');
           refetchAssets();
         })
-        .catch((err) => toast.error(err.message || 'Gagal assign aset.'))
-        .finally(() => setIsSubmitting(false));
+        .catch((err) => {
+          setIsSubmitting(false);
+          toast.error(err.message || 'Gagal assign aset.');
+        });
       return;
     }
 
@@ -368,22 +389,25 @@ const AssignAsset = memo(() => {
       api.assets
         .update(selectedAsset.id, bodyOrFormData)
         .then(() => {
-          invalidateData('assets');
+          setSelectedAssetId('');
+          setActiveAsset(null);
+          setIsFormModalOpen(false);
+          resetFormState();
+          setIsSubmitting(false);
           toast.success(
             newStatus === 'Rusak'
               ? `Asset ${selectedAsset.serialNumber} telah ditandai Rusak.`
               : `Asset ${selectedAsset.serialNumber} telah di-update. Due Update: ${new Date(dueUpdate).toLocaleDateString('id-ID')}.`
           );
-          setSelectedAssetId('');
-          setActiveAsset(null);
-          setIsFormModalOpen(false);
-          resetFormState();
+          invalidateData('assets');
           refetchAssets();
         })
-        .catch((err) => toast.error(err?.message || 'Gagal update aset.'))
-        .finally(() => setIsSubmitting(false));
+        .catch((err) => {
+          setIsSubmitting(false);
+          toast.error(err?.message || 'Gagal update aset.');
+        });
     }
-  }, [selectedAsset, formData, photos, validate, activeAction, resetFormState, refetchAssets, globalUpdateIntervalDays, toast]);
+  }, [selectedAsset, formData, photos, validate, activeAction, resetFormState, refetchAssets, globalUpdateIntervalDays, toast, user.branch_id]);
 
   const handleClearHolder = useCallback(() => {
     setFormData(prev => ({
@@ -486,7 +510,7 @@ const AssignAsset = memo(() => {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
             {/* Selected Asset Info */}
             <div className="p-4 bg-neutral-50 border border-neutral-200 rounded-lg">
               <h3 className="text-sm font-semibold text-neutral-900 mb-2">
@@ -540,9 +564,9 @@ const AssignAsset = memo(() => {
                     </span>
                   </div>
                   <div>
-                    <span className="text-neutral-500">Kode Cabang:</span>
+                    <span className="text-neutral-500">Cabang:</span>
                     <span className="ml-2 font-medium text-neutral-900">
-                      {selectedAsset.holder.branchCode || '-'}
+                      {selectedAsset.holder.branchName || selectedAsset.holder.branchCode || '-'}
                     </span>
                   </div>
                   <div>
@@ -653,17 +677,14 @@ const AssignAsset = memo(() => {
                       placeholder="198501012010011001"
                     />
                   </div>
+                  {/* Cabang otomatis dari Admin Cabang yang login */}
+                  {user?.branch_name && (
+                    <div className="mb-2 p-3 bg-neutral-50 border border-neutral-200 rounded-lg">
+                      <p className="text-xs text-neutral-500 uppercase tracking-wider">Cabang (otomatis)</p>
+                      <p className="text-sm font-medium text-neutral-900 mt-0.5">{user.branch_name}</p>
+                    </div>
+                  )}
                   <div className="grid grid-cols-2 gap-4">
-                    <Input
-                      label="Three Letter Code Cabang"
-                      name="holderBranchCode"
-                      value={formData.holderBranchCode}
-                      onChange={handleChange}
-                      error={errors.holderBranchCode}
-                      required
-                      maxLength={3}
-                      placeholder="JKT"
-                    />
                     <Input
                       label="Divisi/Unit Kerja"
                       name="holderDivision"
@@ -712,11 +733,14 @@ const AssignAsset = memo(() => {
               {isUpdateAction && (
                 <>
                   <Button
-                    type="submit"
+                    type="button"
                     variant="primary"
                     className="flex items-center gap-2"
                     disabled={isSubmitting}
-                    onClick={() => { updateVariantRef.current = 'Rusak'; }}
+                    onClick={() => {
+                      updateVariantRef.current = 'Rusak';
+                      formRef.current?.requestSubmit();
+                    }}
                   >
                     {isSubmitting ? (
                       <>
@@ -731,11 +755,14 @@ const AssignAsset = memo(() => {
                     )}
                   </Button>
                   <Button
-                    type="submit"
+                    type="button"
                     variant="primary"
                     className="flex items-center gap-2"
                     disabled={isSubmitting}
-                    onClick={() => { updateVariantRef.current = 'Available'; }}
+                    onClick={() => {
+                      updateVariantRef.current = 'Available';
+                      formRef.current?.requestSubmit();
+                    }}
                   >
                     {isSubmitting ? (
                       <>

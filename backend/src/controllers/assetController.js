@@ -1,27 +1,5 @@
 import * as assetService from '../services/assetService.js';
-import config from '../config/index.js';
-
-/** Upload req.files to Supabase and return array of public URLs. Leaves req.body unchanged. */
-async function uploadConditionPhotoUrls(req) {
-  const files = req.files && Array.isArray(req.files) ? req.files : [];
-  if (files.length === 0) return [];
-  const urls = [];
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-    try {
-      const { url } = await assetService.uploadAssetPhoto(
-        file.buffer,
-        file.originalname || `photo-${i + 1}.jpg`,
-        file.mimetype || 'image/jpeg'
-      );
-      urls.push(url);
-    } catch (err) {
-      console.warn('[uploadConditionPhotoUrls] file', i, 'failed:', err?.message);
-    }
-  }
-  console.log('[uploadConditionPhotoUrls] uploaded', urls.length, 'of', files.length);
-  return urls;
-}
+import { uploadConditionPhotoUrls } from '../middleware/upload.js';
 
 export async function getAssets(req, res, next) {
   try {

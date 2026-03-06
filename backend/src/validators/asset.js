@@ -29,6 +29,7 @@ export const assignAssetSchema = z.object({
   holderFullName: z.string().min(1).max(200),
   holderNip: z.string().max(50).optional(),
   holderBranchCode: z.string().max(20).optional(),
+  holderBranchId: z.string().min(1).optional(),
   holderDivision: z.string().max(100).optional(),
   holderEmail: z.string().email().max(255).optional(),
   holderPhone: z.string().max(30).optional(),

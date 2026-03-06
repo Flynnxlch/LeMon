@@ -49,6 +49,7 @@ model Branch {
   transferFrom     TransferRequest[] @relation("FromBranch")
   transferTo      TransferRequest[] @relation("ToBranch")
   assetRequests   AssetRequest[]
+  holderAssignments AssetAssignment[]
 }
 
 model Asset {
@@ -85,6 +86,7 @@ model AssetAssignment {
   holderFullName String
   holderNip     String?
   holderBranchCode String?
+  holderBranchId  String?
   holderDivision  String?
   holderEmail   String?
   holderPhone   String?
@@ -96,9 +98,11 @@ model AssetAssignment {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  asset     Asset  @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  asset         Asset   @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  holderBranch  Branch? @relation(fields: [holderBranchId], references: [id], onDelete: SetNull)
 
   @@index([assetId, assignedAt])
+  @@index([holderBranchId])
 }
 
 model TransferRequest {
@@ -131,9 +135,14 @@ model ReassignmentRequest {
   newHolderFullName String
   newHolderNip  String?
   newHolderBranchCode String?
+  newHolderBranchId  String?
   newHolderDivision  String?
   newHolderEmail String?
   newHolderPhone String?
+  newHolderLatitude   Float?
+  newHolderLongitude  Float?
+  newHolderAddress    String?
+  newHolderUpdateImages Json?   // array of photo URLs (1-4)
   notes         String?
   requestedById String
   status        String   @default("Pending")

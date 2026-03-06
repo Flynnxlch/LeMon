@@ -171,12 +171,14 @@ export const api = {
       if (photoFile) form.append('photo', photoFile);
       return request('assets', { method: 'POST', body: form });
     },
-    update: (id, body) =>
-      request(`assets/${id}`, {
+    update: (id, body) => {
+      const isFormData = body instanceof FormData;
+      return request(`assets/${id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      }),
+        ...(isFormData ? {} : { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }),
+        ...(isFormData ? { body } : {}),
+      });
+    },
     delete: (id) => request(`assets/${id}`, { method: 'DELETE' }),
     assign: (id, bodyOrFormData) => {
       if (bodyOrFormData instanceof FormData) {
@@ -210,12 +212,16 @@ export const api = {
   reassignmentRequests: {
     list: (status) =>
       request(`reassignment-requests${status ? `?status=${encodeURIComponent(status)}` : ''}`),
-    create: (body) =>
-      request('reassignment-requests', {
+    create: (bodyOrFormData) => {
+      if (bodyOrFormData instanceof FormData) {
+        return request('reassignment-requests', { method: 'POST', body: bodyOrFormData });
+      }
+      return request('reassignment-requests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      }),
+        body: JSON.stringify(bodyOrFormData),
+      });
+    },
     approve: (id) => request(`reassignment-requests/${id}/approve`, { method: 'PATCH' }),
     reject: (id) => request(`reassignment-requests/${id}/reject`, { method: 'PATCH' }),
   },

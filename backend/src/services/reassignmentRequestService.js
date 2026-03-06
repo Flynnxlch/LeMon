@@ -69,9 +69,14 @@ export async function createReassignmentRequest(data, userId, userRole, userBran
       newHolderFullName: data.newHolderFullName,
       newHolderNip: data.newHolderNip,
       newHolderBranchCode: data.newHolderBranchCode,
+      newHolderBranchId: data.newHolderBranchId ?? null,
       newHolderDivision: data.newHolderDivision,
       newHolderEmail: data.newHolderEmail,
       newHolderPhone: data.newHolderPhone,
+      newHolderLatitude: data.newHolderLatitude != null ? Number(data.newHolderLatitude) : null,
+      newHolderLongitude: data.newHolderLongitude != null ? Number(data.newHolderLongitude) : null,
+      newHolderAddress: data.newHolderAddress ?? null,
+      newHolderUpdateImages: Array.isArray(data.newHolderUpdateImages) ? data.newHolderUpdateImages : null,
       notes: data.notes,
       requestedById: userId,
       status: 'Pending',
@@ -102,22 +107,34 @@ export async function approveReassignmentRequest(requestId) {
   const now = new Date();
   const dueUpdate = new Date(now.getTime() + defaultUpdateIntervalDays * 24 * 60 * 60 * 1000);
 
+  const assignmentData = {
+    assetId,
+    holderFullName: rr.newHolderFullName,
+    holderNip: rr.newHolderNip,
+    holderBranchCode: rr.newHolderBranchCode,
+    holderBranchId: rr.newHolderBranchId ?? null,
+    holderDivision: rr.newHolderDivision,
+    holderEmail: rr.newHolderEmail,
+    holderPhone: rr.newHolderPhone,
+    dueUpdate,
+    latitude: rr.newHolderLatitude ?? undefined,
+    longitude: rr.newHolderLongitude ?? undefined,
+    address: rr.newHolderAddress ?? undefined,
+  };
+  const assetUpdateData = {
+    status: 'Available',
+    dueUpdate,
+    ...(rr.newHolderLatitude != null && { latitude: rr.newHolderLatitude }),
+    ...(rr.newHolderLongitude != null && { longitude: rr.newHolderLongitude }),
+    ...(Array.isArray(rr.newHolderUpdateImages) && rr.newHolderUpdateImages.length > 0 && { updateImages: rr.newHolderUpdateImages }),
+  };
   await prisma.$transaction([
     prisma.assetAssignment.create({
-      data: {
-        assetId,
-        holderFullName: rr.newHolderFullName,
-        holderNip: rr.newHolderNip,
-        holderBranchCode: rr.newHolderBranchCode,
-        holderDivision: rr.newHolderDivision,
-        holderEmail: rr.newHolderEmail,
-        holderPhone: rr.newHolderPhone,
-        dueUpdate,
-      },
+      data: assignmentData,
     }),
     prisma.asset.update({
       where: { id: assetId },
-      data: { status: 'Available', dueUpdate },
+      data: assetUpdateData,
     }),
     prisma.reassignmentRequest.update({
       where: { id: requestId },

@@ -176,8 +176,8 @@ const PastHolderRow = memo(({ holder, index, onHolderClick }) => {
             <p className="font-medium text-neutral-900">{holder.nip ?? '—'}</p>
           </div>
           <div>
-            <span className="text-neutral-500">Kode Cabang</span>
-            <p className="font-medium text-neutral-900">{holder.branchCode ?? '—'}</p>
+            <span className="text-neutral-500">Cabang</span>
+            <p className="font-medium text-neutral-900">{holder.branchName ?? holder.branchCode ?? '—'}</p>
           </div>
           <div>
             <span className="text-neutral-500">Divisi</span>
