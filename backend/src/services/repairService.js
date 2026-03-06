@@ -1,7 +1,8 @@
 import { prisma } from '../lib/prisma.js';
 import { invalidateAssets, invalidateBranches, invalidateTransferRequests } from '../utils/cache.js';
-import * as transferRequestService from './transferRequestService.js';
+import * as assetHistoryService from './assetHistoryService.js';
 import * as settingService from './settingService.js';
+import * as transferRequestService from './transferRequestService.js';
 
 /**
  * Get active repair record for an asset (status = in_repair).
@@ -45,6 +46,7 @@ export async function startRepair(assetId, payload, userRole, userId) {
 
   const repairType = payload.repairType === 'transfer' ? 'transfer' : 'at_branch';
   if (repairType === 'at_branch') {
+    const fromBranch = await prisma.branch.findUnique({ where: { id: asset.branchId }, select: { name: true } });
     await prisma.$transaction([
       prisma.asset.update({
         where: { id: assetId },
@@ -59,6 +61,12 @@ export async function startRepair(assetId, payload, userRole, userId) {
         },
       }),
     ]);
+    await assetHistoryService.recordHistory(assetId, 'repair_started', {
+      repairType: 'at_branch',
+      fromStatus: 'Rusak',
+      toStatus: 'Dalam Perbaikan',
+      fromBranchName: fromBranch?.name ?? null,
+    }, userId);
     invalidateAssets();
     return { ok: true, repairType: 'at_branch' };
   }
@@ -77,6 +85,8 @@ export async function startRepair(assetId, payload, userRole, userId) {
       status: 'Pending',
     },
   });
+  const fromBranch = await prisma.branch.findUnique({ where: { id: asset.branchId }, select: { name: true } });
+  const toBranch = await prisma.branch.findUnique({ where: { id: toBranchId }, select: { name: true } });
   await prisma.assetRepair.create({
     data: {
       assetId,
@@ -87,6 +97,14 @@ export async function startRepair(assetId, payload, userRole, userId) {
       status: 'in_repair',
     },
   });
+  await assetHistoryService.recordHistory(assetId, 'repair_started', {
+    repairType: 'transfer',
+    fromStatus: 'Rusak',
+    toStatus: 'Dalam Perbaikan',
+    fromBranchName: fromBranch?.name ?? null,
+    toBranchName: toBranch?.name ?? null,
+    transferRequestId: tr.id,
+  }, userId);
   invalidateTransferRequests();
   invalidateAssets();
   return { ok: true, repairType: 'transfer', transferRequestId: tr.id };
@@ -190,6 +208,15 @@ export async function completeRepair(assetId, payload, userRole, userId) {
       data: { status: 'completed', completedAt: now },
     }),
   ]);
+  await assetHistoryService.recordHistory(assetId, 'repair_completed', {
+    fromStatus: 'Dalam Perbaikan',
+    toStatus: 'Available',
+    updateImages,
+    returnToPreviousUser,
+    holderFullName: assignmentData.holderFullName,
+    latitude: assignmentData.latitude,
+    longitude: assignmentData.longitude,
+  }, userId);
   invalidateAssets();
   invalidateBranches();
   return { ok: true };

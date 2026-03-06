@@ -163,6 +163,7 @@ export const api = {
       return request(`assets${q ? `?${q}` : ''}`);
     },
     get: (id) => request(`assets/${id}`),
+    getHistory: (id) => request(`assets/${id}/history`).then((res) => res?.data ?? []),
     create: (body, photoFile) => {
       const form = new FormData();
       Object.entries(body).forEach(([k, v]) => {

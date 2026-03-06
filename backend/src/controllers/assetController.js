@@ -1,6 +1,7 @@
+import { uploadConditionPhotoUrls } from '../middleware/upload.js';
+import * as assetHistoryService from '../services/assetHistoryService.js';
 import * as assetService from '../services/assetService.js';
 import * as repairService from '../services/repairService.js';
-import { uploadConditionPhotoUrls } from '../middleware/upload.js';
 
 export async function getAssets(req, res, next) {
   try {
@@ -39,6 +40,24 @@ export async function getAssetById(req, res, next) {
   }
 }
 
+export async function getAssetHistory(req, res, next) {
+  try {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    const asset = await assetService.getAssetById(
+      req.params.id,
+      req.user?.role,
+      req.user?.branchId
+    );
+    if (!asset) {
+      return res.status(404).json({ success: false, error: 'Asset not found' });
+    }
+    const history = await assetHistoryService.getHistoryByAssetId(req.params.id);
+    res.json({ success: true, data: history });
+  } catch (err) {
+    next(err);
+  }
+}
+
 export async function createAsset(req, res, next) {
   try {
     let photoUrl = null;
@@ -55,7 +74,7 @@ export async function createAsset(req, res, next) {
         console.warn('Asset photo upload failed, creating asset without photo:', uploadErr?.message);
       }
     }
-    const result = await assetService.createAsset(req.body, photoUrl);
+    const result = await assetService.createAsset(req.body, photoUrl, req.user?.id);
     res.status(201).json({ success: true, data: result });
   } catch (err) {
     next(err);
@@ -75,7 +94,8 @@ export async function updateAsset(req, res, next) {
       req.params.id,
       payload,
       req.user.role,
-      req.user.branchId
+      req.user.branchId,
+      req.user.id
     );
     res.json({ success: true, data: result });
   } catch (err) {

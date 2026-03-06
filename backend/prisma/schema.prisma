@@ -26,6 +26,7 @@ model User {
   branch         Branch?   @relation(fields: [branchId], references: [id], onDelete: SetNull)
   @@index([branchId])
   @@index([status])
+  assetHistory   AssetHistory[]
   transferReqs   TransferRequest[]    @relation("RequestedBy")
   reassignReqs   ReassignmentRequest[] @relation("RequestedBy")
   assetReqs      AssetRequest[]      @relation("RequestedBy")
@@ -77,10 +78,26 @@ model Asset {
   transferRequests     TransferRequest[]
   reassignmentRequests ReassignmentRequest[]
   repairs              AssetRepair[]
+  history              AssetHistory[]
 
   @@index([branchId])
   @@index([deletedAt])
   @@index([status])
+}
+
+model AssetHistory {
+  id        String   @id @default(cuid())
+  assetId   String
+  eventType String   // created | status_change | assigned | condition_update | repair_started | repair_completed
+  payload   Json?    // fromStatus, toStatus, updateImages, holderSnapshot, note, etc.
+  userId    String?
+  createdAt DateTime @default(now())
+
+  asset Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  user  User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([assetId])
+  @@index([createdAt])
 }
 
 model AssetAssignment {

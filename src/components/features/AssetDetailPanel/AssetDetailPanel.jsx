@@ -1,10 +1,10 @@
-import { memo, useCallback } from 'react';
+import { memo } from 'react';
 import { HiArrowRight, HiTrash, HiX } from 'react-icons/hi';
+import { STATUS_LABELS } from '../../../utils/assetConstants';
 import Button from '../../common/Button/Button';
 import Card from '../../common/Card/Card';
-import { STATUS_LABELS } from '../../../utils/assetConstants';
 
-const AssetDetailPanel = memo(({ asset, onClose, onTransfer, canTransfer = false, onDelete, canDelete = false, onOpenPastHolders }) => {
+const AssetDetailPanel = memo(({ asset, onClose, onTransfer, canTransfer = false, onDelete, canDelete = false, onOpenDetail }) => {
   if (!asset) return null;
 
   return (
@@ -123,19 +123,19 @@ const AssetDetailPanel = memo(({ asset, onClose, onTransfer, canTransfer = false
           )}
         </div>
 
-        {/* Current Holder Information + Lihat past holder di samping judul */}
+        {/* Current Holder Information + Lihat detail */}
         <div className="border-t border-gray-100 pt-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-neutral-900">
               Current Holder Information
             </h3>
-            {onOpenPastHolders && (
+            {onOpenDetail && (
               <button
                 type="button"
-                onClick={onOpenPastHolders}
+                onClick={onOpenDetail}
                 className="text-sm font-medium text-neutral-900 hover:underline underline-offset-2"
               >
-                Lihat past holder
+                Lihat detail
               </button>
             )}
           </div>

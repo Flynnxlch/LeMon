@@ -1,10 +1,10 @@
-import { memo, useCallback, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { HiPlus } from 'react-icons/hi';
 import Button from '../components/common/Button/Button';
 import AddAssetModal from '../components/features/AddAssetModal/AddAssetModal';
+import AssetDetailOverlay from '../components/features/AssetDetailPanel/AssetDetailOverlay';
 import AssetDetailPanel from '../components/features/AssetDetailPanel/AssetDetailPanel';
-import PastHoldersOverlay from '../components/features/AssetDetailPanel/PastHoldersOverlay';
 import AssetTable from '../components/features/AssetTable/AssetTable';
 import AssetTransferModal from '../components/features/AssetTransferModal/AssetTransferModal';
 import RequestNewAssetModal from '../components/features/RequestNewAssetModal/RequestNewAssetModal';
@@ -12,14 +12,15 @@ import MainLayout from '../components/layout/MainLayout/MainLayout';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import {
-  useAssets,
-  useAssetDetail,
-  useBranches,
-  useDeleteAsset,
-  useCreateAsset,
-  useDirectTransfer,
-  useCreateTransferRequest,
-  useCreateAssetRequest,
+    useAssetDetail,
+    useAssetHistory,
+    useAssets,
+    useBranches,
+    useCreateAsset,
+    useCreateAssetRequest,
+    useCreateTransferRequest,
+    useDeleteAsset,
+    useDirectTransfer,
 } from '../hooks/useQueries';
 
 function applyDueUpdateStatus(assets) {
@@ -43,7 +44,7 @@ const Assets = memo(() => {
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [isRequestNewAssetModalOpen, setIsRequestNewAssetModalOpen] = useState(false);
   const [assetToTransfer, setAssetToTransfer] = useState(null);
-  const [showPastHoldersOverlay, setShowPastHoldersOverlay] = useState(false);
+  const [showDetailOverlay, setShowDetailOverlay] = useState(false);
   const [branchFilter, setBranchFilter] = useState('');
 
   const assetParams = useMemo(() => {
@@ -63,6 +64,9 @@ const Assets = memo(() => {
 
   const { data: assetDetail, isLoading: detailLoading } = useAssetDetail(selectedAssetId, {
     enabled: !!selectedAssetId,
+  });
+  const { data: assetHistory = [], isLoading: historyLoading } = useAssetHistory(selectedAssetId, {
+    enabled: !!selectedAssetId && showDetailOverlay,
   });
 
   const selectedAsset = assetDetail ?? selectedAssetPreview;
@@ -94,8 +98,8 @@ const Assets = memo(() => {
     setSelectedAssetPreview(null);
   }, []);
 
-  const openPastHoldersOverlay = useCallback(() => setShowPastHoldersOverlay(true), []);
-  const closePastHoldersOverlay = useCallback(() => setShowPastHoldersOverlay(false), []);
+  const openDetailOverlay = useCallback(() => setShowDetailOverlay(true), []);
+  const closeDetailOverlay = useCallback(() => setShowDetailOverlay(false), []);
 
   const handleOpenAddModal = useCallback(() => {
     if (isAdminCabang) {
@@ -260,7 +264,7 @@ const Assets = memo(() => {
                 canTransfer={isAdminCabang || isAdminPusat}
                 onDelete={handleDeleteAsset}
                 canDelete={isAdminPusat}
-                onOpenPastHolders={openPastHoldersOverlay}
+                onOpenDetail={openDetailOverlay}
               />
             )}
           </div>
@@ -298,11 +302,13 @@ const Assets = memo(() => {
         />
       )}
 
-      <PastHoldersOverlay
-        isOpen={showPastHoldersOverlay}
-        onClose={closePastHoldersOverlay}
+      <AssetDetailOverlay
+        isOpen={showDetailOverlay}
+        onClose={closeDetailOverlay}
+        asset={selectedAsset}
         pastHolders={selectedAsset?.pastHolders ?? []}
-        assetSerialNumber={selectedAsset?.serialNumber}
+        history={assetHistory}
+        isLoadingHistory={historyLoading}
       />
     </MainLayout>
   );

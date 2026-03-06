@@ -36,6 +36,15 @@ export function useAssetDetail(id, options = {}) {
   });
 }
 
+export function useAssetHistory(assetId, options = {}) {
+  return useQuery({
+    queryKey: ['assets', 'history', assetId],
+    queryFn: () => api.assets.getHistory(assetId),
+    enabled: !!assetId,
+    ...options,
+  });
+}
+
 export function useDeleteAsset() {
   const qc = useQueryClient();
   return useMutation({

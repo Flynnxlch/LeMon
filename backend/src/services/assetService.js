@@ -1,6 +1,7 @@
 import { prisma } from '../lib/prisma.js';
 import { deleteManyFromSupabase, uploadToSupabase, urlToStoragePath } from '../lib/supabase.js';
 import { cache, invalidateAssets, invalidateBranches, KEYS } from '../utils/cache.js';
+import * as assetHistoryService from './assetHistoryService.js';
 
 function mapAsset(asset) {
   const currentAssignment = asset.assignments?.[0];
@@ -168,7 +169,7 @@ export async function getAssetById(id, userRole, userBranchId) {
   return result;
 }
 
-export async function createAsset(data, photoUrl) {
+export async function createAsset(data, photoUrl, userId = null) {
   const asset = await prisma.asset.create({
     data: {
       serialNumber: data.serialNumber,
@@ -182,12 +183,16 @@ export async function createAsset(data, photoUrl) {
     },
     include: { branch: true, assignments: [] },
   });
+  await assetHistoryService.recordHistory(asset.id, 'created', {
+    branchName: asset.branch?.name ?? null,
+    serialNumber: asset.serialNumber,
+  }, userId);
   invalidateAssets();
   invalidateBranches();
   return mapAsset(asset);
 }
 
-export async function updateAsset(id, data, userRole, userBranchId) {
+export async function updateAsset(id, data, userRole, userBranchId, userId = null) {
   const existing = await prisma.asset.findFirst({
     where: { id, deletedAt: null },
   });
@@ -199,6 +204,8 @@ export async function updateAsset(id, data, userRole, userBranchId) {
   if (payload.dueUpdate !== undefined && typeof payload.dueUpdate === 'string') {
     payload.dueUpdate = new Date(payload.dueUpdate);
   }
+  const statusChanged = payload.status !== undefined && payload.status !== existing.status;
+  const hasConditionUpdate = Array.isArray(payload.updateImages) && payload.updateImages.length > 0;
   const asset = await prisma.asset.update({
     where: { id },
     data: payload,
@@ -207,6 +214,19 @@ export async function updateAsset(id, data, userRole, userBranchId) {
       assignments: { orderBy: { assignedAt: 'desc' }, take: 1 },
     },
   });
+  if (statusChanged) {
+    await assetHistoryService.recordHistory(id, 'status_change', {
+      fromStatus: existing.status,
+      toStatus: asset.status,
+    }, userId);
+  }
+  if (hasConditionUpdate) {
+    await assetHistoryService.recordHistory(id, 'condition_update', {
+      updateImages: payload.updateImages,
+      latitude: payload.latitude ?? existing.latitude,
+      longitude: payload.longitude ?? existing.longitude,
+    }, userId);
+  }
   invalidateAssets();
   return mapAsset(asset);
 }
@@ -292,6 +312,16 @@ export async function assignAsset(assetId, payload, userId, userRole, userBranch
       },
     }),
   ]);
+  await assetHistoryService.recordHistory(assetId, 'assigned', {
+    holderFullName: payload.holderFullName,
+    holderNip: payload.holderNip,
+    holderBranchCode: payload.holderBranchCode,
+    holderDivision: payload.holderDivision,
+    updateImages,
+    latitude: payload.latitude,
+    longitude: payload.longitude,
+    dueUpdate: dueUpdate?.toISOString?.() ?? null,
+  }, userId);
   invalidateAssets();
   console.log('[assignAsset] assetId=', assetId, 'updateImages count=', updateImages.length);
   return getAssetById(assetId, userRole, userBranchId);

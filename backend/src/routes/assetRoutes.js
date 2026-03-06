@@ -1,21 +1,22 @@
 import { Router } from 'express';
 import * as assetController from '../controllers/assetController.js';
 import { authMiddleware, requireRole } from '../middleware/auth.js';
-import { validateBody, validateQuery } from '../middleware/validate.js';
-import { uploadSingle, uploadConditionPhotos, validateImageMagicSingle, validateImageMagicArray } from '../middleware/upload.js';
 import { addAssetLimiter } from '../middleware/rateLimiter.js';
+import { uploadConditionPhotos, uploadSingle, validateImageMagicArray, validateImageMagicSingle } from '../middleware/upload.js';
+import { validateBody, validateQuery } from '../middleware/validate.js';
 import {
-  createAssetSchema,
-  updateAssetSchema,
-  assignAssetSchema,
-  getAssetsQuerySchema,
-  startRepairSchema,
+    assignAssetSchema,
+    createAssetSchema,
+    getAssetsQuerySchema,
+    startRepairSchema,
+    updateAssetSchema,
 } from '../validators/asset.js';
 
 const router = Router();
 
 router.get('/', authMiddleware, validateQuery(getAssetsQuerySchema), assetController.getAssets);
 router.get('/:id/repair', authMiddleware, assetController.getAssetRepair);
+router.get('/:id/history', authMiddleware, assetController.getAssetHistory);
 router.get('/:id', authMiddleware, assetController.getAssetById);
 router.post(
   '/',
