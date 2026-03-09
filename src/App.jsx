@@ -18,6 +18,7 @@ const ReminderSettings = lazy(() => import('./pages/ReminderSettings'));
 const AssetRusak = lazy(() => import('./pages/AssetRusak'));
 const AssetHilang = lazy(() => import('./pages/AssetHilang'));
 const KontrakHabis = lazy(() => import('./pages/KontrakHabis'));
+const ProgressTrack = lazy(() => import('./pages/ProgressTrack'));
 
 // Loading component
 const PageLoader = () => (
@@ -156,6 +157,17 @@ function App() {
             <ProtectedRoute requiredRole="Admin Pusat">
               <ErrorBoundary>
                 <KontrakHabis />
+              </ErrorBoundary>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/progress-track"
+          element={
+            <ProtectedRoute>
+              <ErrorBoundary>
+                <ProgressTrack />
               </ErrorBoundary>
             </ProtectedRoute>
           }

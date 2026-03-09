@@ -1,21 +1,22 @@
-import { useState, memo } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { 
-  HiChartBar, 
-  HiCube, 
-  HiUserAdd, 
-  HiOfficeBuilding, 
-  HiX,
-  HiChevronLeft,
-  HiChevronRight,
-  HiSwitchHorizontal,
-  HiClipboardList,
-  HiBadgeCheck,
-  HiClock,
-  HiExclamation,
-  HiBan,
-  HiCalendar
+import { memo, useState } from 'react';
+import {
+    HiBadgeCheck,
+    HiBan,
+    HiCalendar,
+    HiChartBar,
+    HiChevronLeft,
+    HiChevronRight,
+    HiClipboardList,
+    HiClock,
+    HiCube,
+    HiExclamation,
+    HiOfficeBuilding,
+    HiSwitchHorizontal,
+    HiTrendingUp,
+    HiUserAdd,
+    HiX
 } from 'react-icons/hi';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 
 const Sidebar = memo(({ isOpen, onClose }) => {
@@ -28,7 +29,8 @@ const Sidebar = memo(({ isOpen, onClose }) => {
   const getNavigationItems = () => {
     const commonItems = [
       { path: '/dashboard', label: 'Dashboard', icon: HiChartBar },
-      { path: '/assets', label: 'Assets', icon: HiCube }
+      { path: '/assets', label: 'Assets', icon: HiCube },
+      { path: '/progress-track', label: 'Progress Track', icon: HiTrendingUp },
     ];
     
     const adminCabangItems = [

@@ -5,6 +5,7 @@ import { invalidateData } from '../utils/dataInvalidation';
 export const queryKeys = {
   assets: (params) => ['assets', params ?? {}],
   asset: (id) => ['assets', 'detail', id],
+  progressTrack: (params) => ['progressTrack', params ?? {}],
   branches: () => ['branches'],
   branch: (id) => ['branches', id],
   users: (params) => ['users', params ?? {}],
@@ -54,12 +55,27 @@ export function useAssetBeritaAcara(assetId, options = {}) {
   });
 }
 
+export function useProgressTrack(params, options = {}) {
+  return useQuery({
+    queryKey: queryKeys.progressTrack(params),
+    queryFn: () =>
+      api.progressTrack.list(params).then((res) => ({
+        data: res?.data ?? [],
+        total: res?.total ?? 0,
+        page: res?.page ?? 1,
+        limit: res?.limit ?? 25,
+      })),
+    ...options,
+  });
+}
+
 export function useDeleteAsset() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id) => api.assets.delete(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['assets'] });
+      qc.invalidateQueries({ queryKey: ['progressTrack'] });
       invalidateData('assets');
     },
   });
@@ -71,6 +87,7 @@ export function useCreateAsset() {
     mutationFn: ({ payload, photo, beritaAcara }) => api.assets.create(payload, photo, beritaAcara),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['assets'] });
+      qc.invalidateQueries({ queryKey: ['progressTrack'] });
       invalidateData('assets');
     },
   });
@@ -82,6 +99,7 @@ export function useAssignAsset() {
     mutationFn: ({ assetId, body }) => api.assets.assign(assetId, body),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['assets'] });
+      qc.invalidateQueries({ queryKey: ['progressTrack'] });
       invalidateData('assets');
     },
   });
@@ -93,6 +111,7 @@ export function useUpdateCondition() {
     mutationFn: ({ assetId, body }) => api.assets.update(assetId, body),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['assets'] });
+      qc.invalidateQueries({ queryKey: ['progressTrack'] });
       invalidateData('assets');
     },
   });
@@ -127,6 +146,7 @@ export function useDirectTransfer() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['assets'] });
       qc.invalidateQueries({ queryKey: ['transferRequests'] });
+      qc.invalidateQueries({ queryKey: ['progressTrack'] });
       invalidateData('assets');
       invalidateData('transferRequests');
     },
@@ -140,6 +160,7 @@ export function useCreateTransferRequest() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['assets'] });
       qc.invalidateQueries({ queryKey: ['transferRequests'] });
+      qc.invalidateQueries({ queryKey: ['progressTrack'] });
       invalidateData('assets');
       invalidateData('transferRequests');
     },
@@ -153,6 +174,7 @@ export function useApproveTransferRequest() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['assets'] });
       qc.invalidateQueries({ queryKey: ['transferRequests'] });
+      qc.invalidateQueries({ queryKey: ['progressTrack'] });
       invalidateData('assets');
       invalidateData('transferRequests');
     },
@@ -165,6 +187,7 @@ export function useRejectTransferRequest() {
     mutationFn: (id) => api.transferRequests.reject(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['transferRequests'] });
+      qc.invalidateQueries({ queryKey: ['progressTrack'] });
       invalidateData('transferRequests');
     },
   });
@@ -198,6 +221,7 @@ export function useApproveReassignmentRequest() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['assets'] });
       qc.invalidateQueries({ queryKey: ['reassignmentRequests'] });
+      qc.invalidateQueries({ queryKey: ['progressTrack'] });
       invalidateData('assets');
       invalidateData('reassignmentRequests');
     },
@@ -210,6 +234,7 @@ export function useRejectReassignmentRequest() {
     mutationFn: (id) => api.reassignmentRequests.reject(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['reassignmentRequests'] });
+      qc.invalidateQueries({ queryKey: ['progressTrack'] });
       invalidateData('reassignmentRequests');
     },
   });
@@ -231,6 +256,7 @@ export function useCreateAssetRequest() {
     mutationFn: ({ body, photo }) => api.assetRequests.create(body, photo),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['assetRequests'] });
+      qc.invalidateQueries({ queryKey: ['progressTrack'] });
       invalidateData('assetRequests');
     },
   });
@@ -243,6 +269,7 @@ export function useApproveAssetRequest() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['assets'] });
       qc.invalidateQueries({ queryKey: ['assetRequests'] });
+      qc.invalidateQueries({ queryKey: ['progressTrack'] });
       invalidateData('assets');
       invalidateData('assetRequests');
     },
@@ -255,6 +282,7 @@ export function useRejectAssetRequest() {
     mutationFn: (id) => api.assetRequests.reject(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['assetRequests'] });
+      qc.invalidateQueries({ queryKey: ['progressTrack'] });
       invalidateData('assetRequests');
     },
   });

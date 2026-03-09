@@ -280,6 +280,12 @@ export const api = {
         body: JSON.stringify(body),
       }),
   },
+  progressTrack: {
+    list: (params) => {
+      const q = new URLSearchParams(params).toString();
+      return request(`progress-track${q ? `?${q}` : ''}`);
+    },
+  },
   assetRequests: {
     list: (status) =>
       request(`asset-requests${status ? `?status=${encodeURIComponent(status)}` : ''}`),

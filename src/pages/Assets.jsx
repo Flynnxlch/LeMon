@@ -1,6 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { memo, useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { HiPlus } from 'react-icons/hi';
+import { useSearchParams } from 'react-router-dom';
 import Button from '../components/common/Button/Button';
 import AddAssetModal from '../components/features/AddAssetModal/AddAssetModal';
 import AssetDetailOverlay from '../components/features/AssetDetailPanel/AssetDetailOverlay';
@@ -39,6 +40,7 @@ const Assets = memo(() => {
   const { user, isAdminCabang, isAdminPusat } = useAuth();
   const toast = useToast();
   const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
   const [selectedAssetId, setSelectedAssetId] = useState(null);
   const [selectedAssetPreview, setSelectedAssetPreview] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -88,6 +90,21 @@ const Assets = memo(() => {
     if (!isAdminPusat || !branchFilter) return branchAssets;
     return branchAssets.filter((a) => a.branch_id === branchFilter);
   }, [branchAssets, isAdminPusat, branchFilter]);
+
+  const serialFromUrl = searchParams.get('serial');
+  useEffect(() => {
+    if (!serialFromUrl || branchAssets.length === 0) return;
+    const match = branchAssets.find(
+      (a) => a.serialNumber && a.serialNumber.toLowerCase() === serialFromUrl.trim().toLowerCase()
+    );
+    if (match && match.id !== selectedAssetId) {
+      setSelectedAssetPreview(match);
+      setSelectedAssetId(match.id);
+      if (window.innerWidth < 1024) {
+        document.getElementById('asset-detail-section')?.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  }, [serialFromUrl, branchAssets, selectedAssetId]);
 
   const handleViewAsset = useCallback((asset) => {
     setSelectedAssetPreview(asset);
