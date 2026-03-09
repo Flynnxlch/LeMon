@@ -69,6 +69,7 @@ model Asset {
   latitude     Float?
   longitude    Float?
   dueUpdate    DateTime? // next update due date
+  contractEndDate DateTime? // end date of contract; past due => tracked in "Kontrak Habis" menu
   deletedAt    DateTime?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
@@ -83,6 +84,7 @@ model Asset {
   @@index([branchId])
   @@index([deletedAt])
   @@index([status])
+  @@index([contractEndDate])
 }
 
 model AssetHistory {

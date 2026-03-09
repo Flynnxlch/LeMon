@@ -84,6 +84,7 @@ const AssetApproval = memo(() => {
       brand: req.brand || '',
       model: req.model || '',
       detail: req.detail || '',
+      contractEndDate: '',
     });
   }, []);
 
@@ -113,6 +114,10 @@ const AssetApproval = memo(() => {
 
   const handleApprove = useCallback(() => {
     if (!selectedRequest || !editForm) return;
+    if (!editForm.contractEndDate || !String(editForm.contractEndDate).trim()) {
+      toast.error('Tanggal akhir kontrak wajib diisi sebelum approve.');
+      return;
+    }
     approveMutation.mutate(
       {
         id: selectedRequest.id,
@@ -122,6 +127,7 @@ const AssetApproval = memo(() => {
           brand: editForm.brand,
           model: editForm.model,
           detail: editForm.detail,
+          contractEndDate: editForm.contractEndDate ? `${editForm.contractEndDate}T00:00:00.000Z` : undefined,
         },
       },
       {
@@ -311,6 +317,15 @@ const AssetApproval = memo(() => {
                       value={editForm.serialNumber}
                       onChange={handleEditChange}
                     />
+                    <Input
+                      label="Tanggal Akhir Kontrak"
+                      name="contractEndDate"
+                      type="date"
+                      value={editForm.contractEndDate}
+                      onChange={handleEditChange}
+                      required
+                      helperText="Wajib diisi. Jika sudah lewat, aset akan masuk menu Kontrak Habis."
+                    />
                     <div>
                       <label className="block text-sm font-medium text-neutral-700 mb-2">Tipe Aset</label>
                       <select
@@ -373,6 +388,10 @@ const AssetApproval = memo(() => {
                     <div>
                       <label className="block text-sm font-medium text-neutral-500 mb-1">Serial Number</label>
                       <p className="text-neutral-900 font-medium">{editForm.serialNumber || '—'}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-500 mb-1">Tanggal Akhir Kontrak</label>
+                      <p className="text-neutral-900 font-medium">{editForm.contractEndDate || '—'}</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-neutral-500 mb-1">Tipe Aset</label>

@@ -125,6 +125,16 @@ const EVENT_LABELS = {
   repair_completed: 'Perbaikan selesai',
 };
 
+function getHistoryEventLabel(entry) {
+  if (entry.eventType === 'status_change') {
+    const fromStatus = entry.payload?.fromStatus;
+    const toStatus = entry.payload?.toStatus;
+    if (toStatus === 'Hilang') return 'Aset Hilang';
+    if (fromStatus === 'Hilang' && toStatus === 'Available') return 'Pengadaan Ulang';
+  }
+  return EVENT_LABELS[entry.eventType] ?? entry.eventType;
+}
+
 function HistoryItem({ entry }) {
   const payload = entry.payload || {};
   const images = payload.updateImages && Array.isArray(payload.updateImages) ? payload.updateImages : [];
@@ -134,7 +144,7 @@ function HistoryItem({ entry }) {
       <div className="flex flex-wrap items-center gap-2 mb-2">
         <span className="text-xs font-medium text-neutral-500">{formatDateTime(entry.createdAt)}</span>
         <span className="inline-flex px-2.5 py-1 rounded-md text-xs font-semibold bg-neutral-100 text-neutral-700">
-          {EVENT_LABELS[entry.eventType] ?? entry.eventType}
+          {getHistoryEventLabel(entry)}
         </span>
       </div>
       {entry.eventType === 'status_change' && (
@@ -345,6 +355,7 @@ const AssetDetailOverlay = memo(({ isOpen, onClose, asset, pastHolders = [], his
                           </span>
                         </p>
                       </div>
+                      <div><span className="text-neutral-500">Masa Kontrak</span><p className="font-medium">{formatDateOnly(asset?.contractEndDate) ?? '—'}</p></div>
                       <div className="col-span-2"><span className="text-neutral-500">Due Update (kapan past due)</span><p className="font-medium">{formatDateOnly(asset?.dueUpdate) ?? '—'}</p></div>
                       <div className="col-span-2"><span className="text-neutral-500">Address</span><p className="font-medium">{displayAddress ?? '—'}</p></div>
                       <div className="col-span-2"><span className="text-neutral-500">Last Updated</span><p className="font-medium">{asset?.lastUpdate ? formatDateTime(asset.lastUpdate) : '—'}</p></div>

@@ -15,6 +15,7 @@ export const approveAssetRequestSchema = z.object({
   brand: z.string().min(1).max(100).optional(),
   model: z.string().min(1).max(100).optional(),
   detail: z.string().max(1000).optional(),
+  contractEndDate: z.string().optional(),
 }).strict();
 
 export const getAssetRequestsQuerySchema = z.object({

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import * as assetRequestController from '../controllers/assetRequestController.js';
 import { authMiddleware, requireRole } from '../middleware/auth.js';
-import { validateBody, validateQuery } from '../middleware/validate.js';
+import { validateQuery } from '../middleware/validate.js';
 import { uploadSingle, validateImageMagicSingle } from '../middleware/upload.js';
 import {
   createAssetRequestSchema,
@@ -56,6 +56,7 @@ router.patch(
       brand: body.brand,
       model: body.model,
       detail: body.detail,
+      contractEndDate: body.contractEndDate,
     });
     req.body = result.success ? result.data : {};
     next();

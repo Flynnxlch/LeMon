@@ -12,7 +12,9 @@ import {
   HiClipboardList,
   HiBadgeCheck,
   HiClock,
-  HiExclamation
+  HiExclamation,
+  HiBan,
+  HiCalendar
 } from 'react-icons/hi';
 import { useAuth } from '../../../context/AuthContext';
 
@@ -40,6 +42,8 @@ const Sidebar = memo(({ isOpen, onClose }) => {
       { path: '/reassignment-requests', label: 'Reassignment Requests', icon: HiClipboardList },
       { path: '/asset-approval', label: 'Asset Approval', icon: HiBadgeCheck },
       { path: '/asset-rusak', label: 'Asset Rusak', icon: HiExclamation },
+      { path: '/asset-hilang', label: 'Asset Hilang', icon: HiBan },
+      { path: '/kontrak-habis', label: 'Kontrak Habis', icon: HiCalendar },
     ];
     
     if (userRole === 'Admin Pusat') {

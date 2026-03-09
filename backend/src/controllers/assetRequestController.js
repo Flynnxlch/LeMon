@@ -47,8 +47,7 @@ export async function approveAssetRequest(req, res, next) {
     await assetRequestService.approveAssetRequest(
       req.params.id,
       req.body,
-      photoUrl,
-      req.user.role
+      photoUrl
     );
     res.json({ success: true, data: { ok: true } });
   } catch (err) {

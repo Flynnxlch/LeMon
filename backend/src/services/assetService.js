@@ -34,9 +34,11 @@ function mapAsset(asset) {
     latitude: asset.latitude,
     longitude: asset.longitude,
     dueUpdate: asset.dueUpdate?.toISOString() ?? null,
+    contractEndDate: asset.contractEndDate?.toISOString() ?? null,
     lastUpdate: currentAssignment?.updatedAt?.toISOString() ?? asset.updatedAt?.toISOString(),
     holder,
     pastHolders: [],
+    repairType: asset.repairs?.[0]?.repairType ?? null,
   };
 }
 
@@ -55,6 +57,18 @@ export async function getAssets(filters, userRole, userBranchId) {
     where.branchId = userBranchId;
   }
 
+  const contractFilter = filters.contract || 'active';
+  if (contractFilter !== 'all') {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (contractFilter === 'expired') {
+      where.contractEndDate = { lt: today };
+    } else {
+      // active (default): include assets without contractEndDate or not past due
+      where.OR = [{ contractEndDate: null }, { contractEndDate: { gte: today } }];
+    }
+  }
+
   const assets = await prisma.asset.findMany({
     where,
     select: {
@@ -71,6 +85,7 @@ export async function getAssets(filters, userRole, userBranchId) {
       latitude: true,
       longitude: true,
       dueUpdate: true,
+      contractEndDate: true,
       updatedAt: true,
       branch: { select: { name: true } },
       assignments: {
@@ -87,6 +102,12 @@ export async function getAssets(filters, userRole, userBranchId) {
           updatedAt: true,
           holderBranch: { select: { name: true } },
         },
+      },
+      repairs: {
+        where: { status: 'in_repair' },
+        orderBy: { createdAt: 'desc' },
+        take: 1,
+        select: { repairType: true },
       },
     },
   });
@@ -118,6 +139,7 @@ export async function getAssetById(id, userRole, userBranchId) {
       latitude: true,
       longitude: true,
       dueUpdate: true,
+      contractEndDate: true,
       updatedAt: true,
       branch: { select: { name: true } },
       assignments: {
@@ -139,6 +161,12 @@ export async function getAssetById(id, userRole, userBranchId) {
           address: true,
           holderBranch: { select: { name: true } },
         },
+      },
+      repairs: {
+        where: { status: 'in_repair' },
+        orderBy: { createdAt: 'desc' },
+        take: 1,
+        select: { repairType: true },
       },
     },
   });
@@ -170,6 +198,12 @@ export async function getAssetById(id, userRole, userBranchId) {
 }
 
 export async function createAsset(data, photoUrl, userId = null) {
+  let contractEndDate = null;
+  if (data.contractEndDate) {
+    const raw = String(data.contractEndDate).trim();
+    contractEndDate = /^\d{4}-\d{2}-\d{2}$/.test(raw) ? new Date(`${raw}T00:00:00.000Z`) : new Date(raw);
+    if (Number.isNaN(contractEndDate.getTime())) contractEndDate = null;
+  }
   const asset = await prisma.asset.create({
     data: {
       serialNumber: data.serialNumber,
@@ -180,6 +214,7 @@ export async function createAsset(data, photoUrl, userId = null) {
       branchId: data.branchId,
       status: 'Available',
       photoUrl: photoUrl || null,
+      contractEndDate,
     },
     include: { branch: true, assignments: [] },
   });
@@ -203,6 +238,14 @@ export async function updateAsset(id, data, userRole, userBranchId, userId = nul
   const payload = { ...data };
   if (payload.dueUpdate !== undefined && typeof payload.dueUpdate === 'string') {
     payload.dueUpdate = new Date(payload.dueUpdate);
+  }
+  if (payload.contractEndDate !== undefined) {
+    if (payload.contractEndDate === null || payload.contractEndDate === '') {
+      payload.contractEndDate = null;
+    } else if (typeof payload.contractEndDate === 'string') {
+      const raw = payload.contractEndDate.trim();
+      payload.contractEndDate = /^\d{4}-\d{2}-\d{2}$/.test(raw) ? new Date(`${raw}T00:00:00.000Z`) : new Date(raw);
+    }
   }
   const statusChanged = payload.status !== undefined && payload.status !== existing.status;
   const hasConditionUpdate = Array.isArray(payload.updateImages) && payload.updateImages.length > 0;

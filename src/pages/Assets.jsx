@@ -125,6 +125,7 @@ const Assets = memo(() => {
           model: assetData.model,
           detail: assetData.detail || '',
           branchId: String(branchId),
+          contractEndDate: assetData.contractEndDate ? `${assetData.contractEndDate}T00:00:00.000Z` : undefined,
         },
         photo: assetData.photo || null,
       });

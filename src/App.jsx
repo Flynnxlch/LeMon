@@ -16,6 +16,8 @@ const ReassignmentRequests = lazy(() => import('./pages/ReassignmentRequests'));
 const AssetApproval = lazy(() => import('./pages/AssetApproval'));
 const ReminderSettings = lazy(() => import('./pages/ReminderSettings'));
 const AssetRusak = lazy(() => import('./pages/AssetRusak'));
+const AssetHilang = lazy(() => import('./pages/AssetHilang'));
+const KontrakHabis = lazy(() => import('./pages/KontrakHabis'));
 
 // Loading component
 const PageLoader = () => (
@@ -132,6 +134,28 @@ function App() {
             <ProtectedRoute requiredRole="Admin Pusat">
               <ErrorBoundary>
                 <AssetRusak />
+              </ErrorBoundary>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/asset-hilang"
+          element={
+            <ProtectedRoute requiredRole="Admin Pusat">
+              <ErrorBoundary>
+                <AssetHilang />
+              </ErrorBoundary>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/kontrak-habis"
+          element={
+            <ProtectedRoute requiredRole="Admin Pusat">
+              <ErrorBoundary>
+                <KontrakHabis />
               </ErrorBoundary>
             </ProtectedRoute>
           }

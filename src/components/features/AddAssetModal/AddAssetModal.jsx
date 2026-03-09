@@ -14,6 +14,7 @@ const AddAssetModal = memo(({ isOpen, onClose, onSubmit, branches = [], branches
     model: '',
     detail: '',
     branchId: '',
+    contractEndDate: '',
     photo: null,
     photoPreview: null,
   });
@@ -120,13 +121,16 @@ const AddAssetModal = memo(({ isOpen, onClose, onSubmit, branches = [], branches
     if (!formData.branchId || !String(formData.branchId).trim()) {
       newErrors.branchId = 'Branch is required';
     }
+    if (!formData.contractEndDate || !String(formData.contractEndDate).trim()) {
+      newErrors.contractEndDate = 'Tanggal kontrak wajib dipilih';
+    }
     if (!formData.photo) {
       newErrors.photo = 'Photo is required';
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  }, [formData, branches.length]);
+  }, [formData]);
 
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
@@ -147,6 +151,7 @@ const AddAssetModal = memo(({ isOpen, onClose, onSubmit, branches = [], branches
         model: '',
         detail: '',
         branchId: formData.branchId,
+        contractEndDate: '',
         photo: null,
         photoPreview: null,
       });
@@ -168,6 +173,7 @@ const AddAssetModal = memo(({ isOpen, onClose, onSubmit, branches = [], branches
       brand: '',
       model: '',
       detail: '',
+      contractEndDate: '',
       photo: null,
       photoPreview: null,
     });
@@ -239,6 +245,20 @@ const AddAssetModal = memo(({ isOpen, onClose, onSubmit, branches = [], branches
             {!branchesLoading && branches.length === 0 && (
               <p className="mt-1 text-sm text-amber-600">Belum ada cabang. Tambah cabang di Branch &amp; User Management terlebih dahulu.</p>
             )}
+          </div>
+
+          {/* Contract End Date */}
+          <div>
+            <Input
+              label="Tanggal Akhir Kontrak"
+              name="contractEndDate"
+              type="date"
+              value={formData.contractEndDate}
+              onChange={handleChange}
+              error={errors.contractEndDate}
+              required
+              helperText="Aset yang sudah melewati tanggal ini akan otomatis masuk menu Kontrak Habis."
+            />
           </div>
 
           {/* Type */}

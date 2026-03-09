@@ -276,7 +276,9 @@ const AssetRusak = memo(() => {
               <tr>
                 <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Asset</th>
                 <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider hidden sm:table-cell">Cabang</th>
-                <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Kondisi (foto)</th>
+                <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+                  {tab === TAB_DALAM_PERBAIKAN ? 'Jenis Perbaikan' : 'Kondisi (foto)'}
+                </th>
                 <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Aksi</th>
               </tr>
             </thead>
@@ -323,7 +325,11 @@ const AssetRusak = memo(() => {
                       <div className="text-sm text-neutral-500">{asset.type} · {asset.branch_name ?? '—'}</div>
                     </td>
                     <td className="px-4 sm:px-6 py-4 hidden sm:table-cell text-sm text-neutral-700">{asset.branch_name ?? '—'}</td>
-                    <td className="px-4 sm:px-6 py-4 text-sm text-neutral-500">—</td>
+                    <td className="px-4 sm:px-6 py-4">
+                      <span className="text-sm font-medium text-neutral-700">
+                        {asset.repairType === 'at_branch' ? 'Perbaikan Sendiri' : asset.repairType === 'transfer' ? 'Perbaikan Transfer' : '—'}
+                      </span>
+                    </td>
                     <td className="px-4 sm:px-6 py-4">
                       <Button type="button" variant="primary" size="sm" onClick={() => openSelesai(asset)}>
                         <HiCheckCircle className="w-4 h-4 mr-1 inline" />

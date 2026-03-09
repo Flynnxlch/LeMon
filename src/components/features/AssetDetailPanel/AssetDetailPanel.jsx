@@ -108,6 +108,16 @@ const AssetDetailPanel = memo(({ asset, onClose, onTransfer, canTransfer = false
                 {STATUS_LABELS[asset.status] ?? asset.status}
               </span>
             </div>
+            <div>
+              <span className="text-sm text-neutral-500 block mb-1">
+                Masa Kontrak
+              </span>
+              <span className="text-base font-medium text-neutral-900">
+                {asset.contractEndDate
+                  ? new Date(asset.contractEndDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+                  : '—'}
+              </span>
+            </div>
           </div>
 
           {/* Detail (Optional) - preserve line breaks (e.g. 1. / 2.) */}

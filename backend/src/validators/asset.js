@@ -2,6 +2,13 @@ import { z } from 'zod';
 
 const statusOptions = ['Available', 'Perlu Diupdate', 'Diperbaiki', 'Rusak', 'Dalam Perbaikan', 'Hilang'];
 
+const dateOnlyRegex = /^\d{4}-\d{2}-\d{2}$/;
+function isValidDateOnly(value) {
+  if (typeof value !== 'string' || !dateOnlyRegex.test(value)) return false;
+  const d = new Date(`${value}T00:00:00.000Z`);
+  return !Number.isNaN(d.getTime());
+}
+
 export const createAssetSchema = z.object({
   serialNumber: z.string().min(1).max(100),
   type: z.string().min(1).max(100),
@@ -9,6 +16,12 @@ export const createAssetSchema = z.object({
   model: z.string().min(1).max(100),
   detail: z.string().max(1000).optional(),
   branchId: z.string().min(1),
+  contractEndDate: z
+    .string()
+    .optional()
+    .refine((v) => v == null || isValidDateOnly(v) || !Number.isNaN(new Date(v).getTime()), {
+      message: 'contractEndDate must be a valid date (YYYY-MM-DD or ISO datetime)',
+    }),
 }).strict();
 
 export const updateAssetSchema = z.object({
@@ -23,6 +36,13 @@ export const updateAssetSchema = z.object({
   longitude: z.number().optional().nullable(),
   dueUpdate: z.string().datetime().optional().nullable(),
   updateImages: z.array(z.string().url()).optional().nullable(),
+  contractEndDate: z
+    .string()
+    .optional()
+    .nullable()
+    .refine((v) => v == null || isValidDateOnly(v) || !Number.isNaN(new Date(v).getTime()), {
+      message: 'contractEndDate must be a valid date (YYYY-MM-DD or ISO datetime)',
+    }),
 }).strict();
 
 export const assignAssetSchema = z.object({
@@ -50,6 +70,7 @@ export const getAssetsQuerySchema = z.object({
   branchId: z.string().optional(),
   status: z.enum(statusOptions).optional(),
   excludeDeleted: z.coerce.boolean().optional(),
+  contract: z.enum(['active', 'expired', 'all']).optional(),
 }).strict();
 
 export const startRepairSchema = z.object({

@@ -11,6 +11,7 @@ export async function getAssets(req, res, next) {
       branchId: q.branchId,
       status: q.status,
       excludeDeleted: q.excludeDeleted,
+      contract: q.contract,
     };
     const list = await assetService.getAssets(
       filters,

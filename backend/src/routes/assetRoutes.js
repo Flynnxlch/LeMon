@@ -40,6 +40,10 @@ router.post(
       model: raw.model != null ? String(raw.model).trim() : undefined,
       detail: raw.detail != null && String(raw.detail).trim() !== '' ? String(raw.detail).trim() : undefined,
       branchId: raw.branchId != null && String(raw.branchId).trim() !== '' ? String(raw.branchId).trim() : undefined,
+      contractEndDate:
+        raw.contractEndDate != null && String(raw.contractEndDate).trim() !== ''
+          ? String(raw.contractEndDate).trim()
+          : undefined,
     };
     const result = createAssetSchema.safeParse(parsed);
     if (!result.success) {

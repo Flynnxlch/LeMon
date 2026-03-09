@@ -54,7 +54,7 @@ export async function createAssetRequest(data, requestedById, photoUrl) {
   return mapAssetRequest(ar);
 }
 
-export async function approveAssetRequest(requestId, editedPayload, photoUrl, userRole) {
+export async function approveAssetRequest(requestId, editedPayload, photoUrl) {
   const ar = await prisma.assetRequest.findUnique({
     where: { id: requestId },
     include: { branch: true },
@@ -68,6 +68,7 @@ export async function approveAssetRequest(requestId, editedPayload, photoUrl, us
     model: editedPayload?.model ?? ar.model,
     detail: editedPayload?.detail ?? ar.detail,
     branchId: ar.branchId,
+    contractEndDate: editedPayload?.contractEndDate,
   };
   await createAsset(payload, photoUrl ?? ar.photoUrl);
   await prisma.assetRequest.update({
