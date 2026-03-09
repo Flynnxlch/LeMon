@@ -2,7 +2,7 @@ import { Router } from 'express';
 import * as assetRequestController from '../controllers/assetRequestController.js';
 import { authMiddleware, requireRole } from '../middleware/auth.js';
 import { validateQuery } from '../middleware/validate.js';
-import { uploadSingle, validateImageMagicSingle } from '../middleware/upload.js';
+import { uploadPhotoAndBeritaAcara, uploadSingle, validateApproveAssetRequestFiles, validateImageMagicSingle } from '../middleware/upload.js';
 import {
   createAssetRequestSchema,
   approveAssetRequestSchema,
@@ -46,8 +46,8 @@ router.patch(
   '/:id/approve',
   authMiddleware,
   requireRole('Admin Pusat'),
-  uploadSingle,
-  validateImageMagicSingle,
+  uploadPhotoAndBeritaAcara,
+  validateApproveAssetRequestFiles,
   (req, res, next) => {
     const body = req.body || {};
     const result = approveAssetRequestSchema.safeParse({
@@ -59,6 +59,7 @@ router.patch(
       contractEndDate: body.contractEndDate,
     });
     req.body = result.success ? result.data : {};
+    req.files = req.files || {};
     next();
   },
   assetRequestController.approveAssetRequest

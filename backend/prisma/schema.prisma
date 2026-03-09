@@ -26,7 +26,8 @@ model User {
   branch         Branch?   @relation(fields: [branchId], references: [id], onDelete: SetNull)
   @@index([branchId])
   @@index([status])
-  assetHistory   AssetHistory[]
+  assetHistory      AssetHistory[]
+  createdBeritaAcara BeritaAcara[]   @relation("BeritaAcaraCreatedBy")
   transferReqs   TransferRequest[]    @relation("RequestedBy")
   reassignReqs   ReassignmentRequest[] @relation("RequestedBy")
   assetReqs      AssetRequest[]      @relation("RequestedBy")
@@ -80,6 +81,7 @@ model Asset {
   reassignmentRequests ReassignmentRequest[]
   repairs              AssetRepair[]
   history              AssetHistory[]
+  beritaAcara          BeritaAcara[]
 
   @@index([branchId])
   @@index([deletedAt])
@@ -97,6 +99,27 @@ model AssetHistory {
 
   asset Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
   user  User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([assetId])
+  @@index([createdAt])
+}
+
+// Berita Acara: PDF wajib untuk tindakan tertentu (hanya PDF, max 500KB, bucket terpisah)
+// Kolom di DB: fileUrl, createdById (sesuai hasil introspect)
+model BeritaAcara {
+  id          String   @id @default(cuid())
+  assetId     String
+  eventType   String
+  title       String   @default("Berita Acara")
+  referenceId String?
+  fileUrl     String
+  fileSize    Int?
+  payload     Json?
+  createdById String?
+  createdAt   DateTime @default(now())
+
+  asset     Asset  @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  createdBy User?  @relation("BeritaAcaraCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
 
   @@index([assetId])
   @@index([createdAt])

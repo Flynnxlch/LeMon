@@ -70,7 +70,7 @@ export async function approveAssetRequest(requestId, editedPayload, photoUrl) {
     branchId: ar.branchId,
     contractEndDate: editedPayload?.contractEndDate,
   };
-  await createAsset(payload, photoUrl ?? ar.photoUrl);
+  const newAsset = await createAsset(payload, photoUrl ?? ar.photoUrl);
   await prisma.assetRequest.update({
     where: { id: requestId },
     data: { status: 'Approved', processedAt: new Date() },
@@ -78,7 +78,7 @@ export async function approveAssetRequest(requestId, editedPayload, photoUrl) {
   invalidateAssetRequests();
   invalidateAssets();
   invalidateBranches();
-  return { ok: true };
+  return { ok: true, assetId: newAsset.id };
 }
 
 export async function rejectAssetRequest(requestId) {

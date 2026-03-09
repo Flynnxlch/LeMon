@@ -45,6 +45,15 @@ export function useAssetHistory(assetId, options = {}) {
   });
 }
 
+export function useAssetBeritaAcara(assetId, options = {}) {
+  return useQuery({
+    queryKey: ['assets', 'berita-acara', assetId],
+    queryFn: () => api.assets.getBeritaAcara(assetId),
+    enabled: !!assetId,
+    ...options,
+  });
+}
+
 export function useDeleteAsset() {
   const qc = useQueryClient();
   return useMutation({
@@ -59,7 +68,7 @@ export function useDeleteAsset() {
 export function useCreateAsset() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ payload, photo }) => api.assets.create(payload, photo),
+    mutationFn: ({ payload, photo, beritaAcara }) => api.assets.create(payload, photo, beritaAcara),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['assets'] });
       invalidateData('assets');
@@ -81,7 +90,7 @@ export function useAssignAsset() {
 export function useUpdateCondition() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ assetId, body }) => api.assets.updateCondition(assetId, body),
+    mutationFn: ({ assetId, body }) => api.assets.update(assetId, body),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['assets'] });
       invalidateData('assets');
@@ -113,7 +122,8 @@ export function useTransferRequests(status, options = {}) {
 export function useDirectTransfer() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body) => api.transferRequests.direct(body),
+    mutationFn: ({ body, beritaAcaraFile } = {}) =>
+      api.transferRequests.direct(body, beritaAcaraFile),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['assets'] });
       qc.invalidateQueries({ queryKey: ['transferRequests'] });
@@ -139,7 +149,7 @@ export function useCreateTransferRequest() {
 export function useApproveTransferRequest() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id) => api.transferRequests.approve(id),
+    mutationFn: ({ id, beritaAcaraFile }) => api.transferRequests.approve(id, beritaAcaraFile),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['assets'] });
       qc.invalidateQueries({ queryKey: ['transferRequests'] });
@@ -184,7 +194,7 @@ export function useCreateReassignmentRequest() {
 export function useApproveReassignmentRequest() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id) => api.reassignmentRequests.approve(id),
+    mutationFn: ({ id, beritaAcaraFile }) => api.reassignmentRequests.approve(id, beritaAcaraFile),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['assets'] });
       qc.invalidateQueries({ queryKey: ['reassignmentRequests'] });
@@ -229,7 +239,7 @@ export function useCreateAssetRequest() {
 export function useApproveAssetRequest() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, body, photo }) => api.assetRequests.approve(id, body, photo),
+    mutationFn: ({ id, body, photo, beritaAcara }) => api.assetRequests.approve(id, body, photo, beritaAcara),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['assets'] });
       qc.invalidateQueries({ queryKey: ['assetRequests'] });

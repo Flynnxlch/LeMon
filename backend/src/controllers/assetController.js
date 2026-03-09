@@ -1,6 +1,7 @@
 import { uploadConditionPhotoUrls } from '../middleware/upload.js';
 import * as assetHistoryService from '../services/assetHistoryService.js';
 import * as assetService from '../services/assetService.js';
+import * as beritaAcaraService from '../services/beritaAcaraService.js';
 import * as repairService from '../services/repairService.js';
 
 export async function getAssets(req, res, next) {
@@ -59,23 +60,59 @@ export async function getAssetHistory(req, res, next) {
   }
 }
 
+export async function getAssetBeritaAcara(req, res, next) {
+  try {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    const asset = await assetService.getAssetById(
+      req.params.id,
+      req.user?.role,
+      req.user?.branchId
+    );
+    if (!asset) {
+      return res.status(404).json({ success: false, error: 'Asset not found' });
+    }
+    const list = await beritaAcaraService.getByAssetId(req.params.id);
+    res.json({ success: true, data: list });
+  } catch (err) {
+    next(err);
+  }
+}
+
 export async function createAsset(req, res, next) {
   try {
     let photoUrl = null;
-    if (req.file) {
+    const photo = req.file;
+    if (photo) {
       try {
         const { url } = await assetService.uploadAssetPhoto(
-          req.file.buffer,
-          req.file.originalname,
-          req.file.mimetype
+          photo.buffer,
+          photo.originalname,
+          photo.mimetype
         );
         photoUrl = url;
       } catch (uploadErr) {
-        // Supabase/config bisa gagal; tetap buat asset tanpa foto agar data masuk DB
-        console.warn('Asset photo upload failed, creating asset without photo:', uploadErr?.message);
+        console.warn('Asset photo upload failed:', uploadErr?.message);
       }
     }
     const result = await assetService.createAsset(req.body, photoUrl, req.user?.id);
+    const beritaFile = req.beritaAcaraFile;
+    if (beritaFile) {
+      try {
+        const { url: pdfUrl } = await assetService.uploadBeritaAcaraPdf(
+          beritaFile.buffer,
+          beritaFile.originalname
+        );
+        await beritaAcaraService.createBeritaAcara({
+          assetId: result.id,
+          eventType: 'asset_create',
+          title: 'Aset baru ditambahkan',
+          pdfUrl,
+          userId: req.user?.id,
+        });
+      } catch (uploadErr) {
+        console.warn('Berita Acara upload failed:', uploadErr?.message);
+      }
+    }
     res.status(201).json({ success: true, data: result });
   } catch (err) {
     next(err);
@@ -85,8 +122,9 @@ export async function createAsset(req, res, next) {
 export async function updateAsset(req, res, next) {
   try {
     let payload = { ...req.body };
-    if (req.files && req.files.length > 0) {
-      const urls = await uploadConditionPhotoUrls(req);
+    const conditionPhotos = Array.isArray(req.files) ? req.files : [];
+    if (conditionPhotos.length > 0) {
+      const urls = await uploadConditionPhotoUrls({ ...req, files: conditionPhotos });
       payload.updateImages = urls;
     }
     if (payload.latitude !== undefined) payload.latitude = Number(payload.latitude);
@@ -98,6 +136,29 @@ export async function updateAsset(req, res, next) {
       req.user.branchId,
       req.user.id
     );
+    const beritaFile = req.beritaAcaraFile;
+    if (beritaFile) {
+      try {
+        const { url: pdfUrl } = await assetService.uploadBeritaAcaraPdf(
+          beritaFile.buffer,
+          beritaFile.originalname
+        );
+        const eventType = payload.status !== undefined ? 'status_change' : 'condition_update';
+        const title =
+          payload.status !== undefined
+            ? `Perubahan status aset`
+            : `Update kondisi aset`;
+        await beritaAcaraService.createBeritaAcara({
+          assetId: req.params.id,
+          eventType,
+          title,
+          pdfUrl,
+          userId: req.user?.id,
+        });
+      } catch (uploadErr) {
+        console.warn('Berita Acara upload failed:', uploadErr?.message);
+      }
+    }
     res.json({ success: true, data: result });
   } catch (err) {
     if (err.message === 'Asset not found') {
@@ -132,8 +193,9 @@ export async function deleteAsset(req, res, next) {
 export async function assignAsset(req, res, next) {
   try {
     let payload = { ...req.body };
-    if (req.files && req.files.length > 0) {
-      const urls = await uploadConditionPhotoUrls(req);
+    const conditionPhotos = Array.isArray(req.files) ? req.files : [];
+    if (conditionPhotos.length > 0) {
+      const urls = await uploadConditionPhotoUrls({ ...req, files: conditionPhotos });
       payload.updateImages = urls;
     }
     if (payload.latitude !== undefined) payload.latitude = Number(payload.latitude);
@@ -145,6 +207,25 @@ export async function assignAsset(req, res, next) {
       req.user.role,
       req.user.branchId
     );
+    const beritaFile = req.beritaAcaraFile;
+    if (beritaFile) {
+      try {
+        const { url: pdfUrl } = await assetService.uploadBeritaAcaraPdf(
+          beritaFile.buffer,
+          beritaFile.originalname
+        );
+        const title = `Asset di Assign ke: ${payload.holderFullName ?? '—'}`;
+        await beritaAcaraService.createBeritaAcara({
+          assetId: req.params.id,
+          eventType: 'assigned',
+          title,
+          pdfUrl,
+          userId: req.user?.id,
+        });
+      } catch (uploadErr) {
+        console.warn('Berita Acara upload failed:', uploadErr?.message);
+      }
+    }
     res.json({ success: true, data: result });
   } catch (err) {
     if (err.message === 'Asset not found') {
@@ -174,6 +255,24 @@ export async function startRepair(req, res, next) {
       req.user.role,
       req.user.id
     );
+    const beritaFile = req.file || (req.files && req.files.beritaAcara && req.files.beritaAcara[0]);
+    if (beritaFile) {
+      try {
+        const { url: pdfUrl } = await assetService.uploadBeritaAcaraPdf(
+          beritaFile.buffer,
+          beritaFile.originalname
+        );
+        await beritaAcaraService.createBeritaAcara({
+          assetId: req.params.id,
+          eventType: 'repair_started',
+          title: 'Perbaikan aset dimulai',
+          pdfUrl,
+          userId: req.user?.id,
+        });
+      } catch (uploadErr) {
+        console.warn('Berita Acara upload failed:', uploadErr?.message);
+      }
+    }
     res.json({ success: true, data: result });
   } catch (err) {
     if (err.message === 'Asset not found' || err.message === 'Asset must have status Rusak to start repair') {
@@ -189,8 +288,9 @@ export async function startRepair(req, res, next) {
 export async function completeRepair(req, res, next) {
   try {
     let payload = { ...req.body };
-    if (req.files && req.files.length > 0) {
-      const urls = await uploadConditionPhotoUrls(req);
+    const conditionPhotos = Array.isArray(req.files) ? req.files : [];
+    if (conditionPhotos.length > 0) {
+      const urls = await uploadConditionPhotoUrls({ ...req, files: conditionPhotos });
       payload.updateImages = urls;
     }
     if (payload.latitude !== undefined && payload.latitude !== '') payload.latitude = Number(payload.latitude);
@@ -203,6 +303,27 @@ export async function completeRepair(req, res, next) {
       req.user.role,
       req.user.id
     );
+    const beritaFile = req.beritaAcaraFile;
+    if (beritaFile) {
+      try {
+        const { url: pdfUrl } = await assetService.uploadBeritaAcaraPdf(
+          beritaFile.buffer,
+          beritaFile.originalname
+        );
+        const title = payload.holderFullName
+          ? `Selesai perbaikan – dikembalikan ke: ${payload.holderFullName}`
+          : 'Selesai perbaikan aset';
+        await beritaAcaraService.createBeritaAcara({
+          assetId: req.params.id,
+          eventType: 'repair_completed',
+          title,
+          pdfUrl,
+          userId: req.user?.id,
+        });
+      } catch (uploadErr) {
+        console.warn('Berita Acara upload failed:', uploadErr?.message);
+      }
+    }
     res.json({ success: true, data: result });
   } catch (err) {
     if (err.message === 'Asset not found' || err.message === 'Asset must have status Dalam Perbaikan to complete repair' || err.message === 'No active repair record found for this asset' || err.message === 'Condition photos: minimum 1, maximum 4' || err.message === 'Holder name is required when reassigning') {

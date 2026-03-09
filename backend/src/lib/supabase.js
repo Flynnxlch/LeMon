@@ -17,6 +17,11 @@ export function getSupabaseAdmin() {
 }
 
 const BUCKET = 'asset-photos';
+// Buat bucket "berita-acara" di Supabase Dashboard (Storage) jika belum ada. Policy: public read untuk tampilan PDF.
+const BUCKET_BERITA_ACARA = 'berita-acara';
+
+/** Max size for Berita Acara PDF (500KB). */
+export const BERITA_ACARA_MAX_BYTES = 500 * 1024;
 
 /**
  * Upload a file buffer to Supabase Storage. Use from backend only (service role).
@@ -38,6 +43,32 @@ export async function uploadToSupabase(fileBuffer, fileName, mimeType) {
     throw new Error(`Storage upload failed: ${error.message}`);
   }
   const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(data.path);
+  return { url: urlData.publicUrl, path: data.path };
+}
+
+/**
+ * Upload PDF (Berita Acara) to bucket berita-acara. Max size 500KB.
+ * @param {Buffer} fileBuffer - PDF content
+ * @param {string} fileName - Unique file name (e.g. uuid.pdf)
+ * @returns {Promise<{ url: string, path: string }>} Public URL and storage path
+ */
+export async function uploadBeritaAcaraPdf(fileBuffer, fileName) {
+  if (fileBuffer.length > BERITA_ACARA_MAX_BYTES) {
+    throw new Error(`Berita Acara PDF maksimal ${BERITA_ACARA_MAX_BYTES / 1024}KB. Ukuran saat ini: ${(fileBuffer.length / 1024).toFixed(1)}KB.`);
+  }
+  const supabase = getSupabaseAdmin();
+  const safeName = (fileName || 'berita-acara.pdf').replace(/[^a-zA-Z0-9._-]/g, '_');
+  const path = safeName.endsWith('.pdf') ? `${Date.now()}-${safeName}` : `${Date.now()}-${safeName}.pdf`;
+  const { data, error } = await supabase.storage
+    .from(BUCKET_BERITA_ACARA)
+    .upload(path, fileBuffer, {
+      contentType: 'application/pdf',
+      upsert: false,
+    });
+  if (error) {
+    throw new Error(`Storage upload Berita Acara failed: ${error.message}`);
+  }
+  const { data: urlData } = supabase.storage.from(BUCKET_BERITA_ACARA).getPublicUrl(data.path);
   return { url: urlData.publicUrl, path: data.path };
 }
 

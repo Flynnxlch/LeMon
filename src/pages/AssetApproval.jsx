@@ -4,6 +4,7 @@ import { motion as Motion, AnimatePresence } from 'framer-motion';
 import Button from '../components/common/Button/Button';
 import Card from '../components/common/Card/Card';
 import Input from '../components/common/Input/Input';
+import PdfUpload from '../components/common/PdfUpload';
 import MainLayout from '../components/layout/MainLayout/MainLayout';
 import ModalWrapper from '../components/common/ModalWrapper/ModalWrapper';
 import { useToast } from '../context/ToastContext';
@@ -44,6 +45,7 @@ const AssetApproval = memo(() => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [editForm, setEditForm] = useState(null);
+  const [beritaAcara, setBeritaAcara] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
 
   const { data: requests = [], isLoading: loading } = useAssetRequests();
@@ -91,6 +93,7 @@ const AssetApproval = memo(() => {
   const closeDetail = useCallback(() => {
     setSelectedRequest(null);
     setEditForm(null);
+    setBeritaAcara(null);
   }, []);
 
   const goToPage = useCallback((page) => {
@@ -118,6 +121,10 @@ const AssetApproval = memo(() => {
       toast.error('Tanggal akhir kontrak wajib diisi sebelum approve.');
       return;
     }
+    if (!beritaAcara) {
+      toast.error('Berita Acara (PDF) wajib diunggah sebelum approve.');
+      return;
+    }
     approveMutation.mutate(
       {
         id: selectedRequest.id,
@@ -129,6 +136,7 @@ const AssetApproval = memo(() => {
           detail: editForm.detail,
           contractEndDate: editForm.contractEndDate ? `${editForm.contractEndDate}T00:00:00.000Z` : undefined,
         },
+        beritaAcara,
       },
       {
         onSuccess: () => {
@@ -138,7 +146,7 @@ const AssetApproval = memo(() => {
         onError: (err) => toast.error(err.message || 'Gagal approve.'),
       }
     );
-  }, [selectedRequest, editForm, closeDetail, approveMutation, toast]);
+  }, [selectedRequest, editForm, beritaAcara, closeDetail, approveMutation, toast]);
 
   const handleReject = useCallback(
     (requestId) => {
@@ -427,6 +435,8 @@ const AssetApproval = memo(() => {
 
               {selectedRequest.status === 'Pending' && (
                 <>
+                  <hr className="border-t border-neutral-200 my-6" />
+                  <PdfUpload file={beritaAcara} onChange={setBeritaAcara} required />
                   <hr className="border-t border-neutral-200 my-6" />
                   {/* Section 3: Tombol Approve & Reject */}
                   <div className="flex flex-wrap gap-3 pt-2">

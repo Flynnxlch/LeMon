@@ -1,5 +1,5 @@
 import { prisma } from '../lib/prisma.js';
-import { deleteManyFromSupabase, uploadToSupabase, urlToStoragePath } from '../lib/supabase.js';
+import { deleteManyFromSupabase, uploadBeritaAcaraPdf as uploadBeritaAcaraPdfToStorage, uploadToSupabase, urlToStoragePath } from '../lib/supabase.js';
 import { cache, invalidateAssets, invalidateBranches, KEYS } from '../utils/cache.js';
 import * as assetHistoryService from './assetHistoryService.js';
 
@@ -372,4 +372,8 @@ export async function assignAsset(assetId, payload, userId, userRole, userBranch
 
 export async function uploadAssetPhoto(fileBuffer, fileName, mimeType) {
   return uploadToSupabase(fileBuffer, fileName, mimeType);
+}
+
+export async function uploadBeritaAcaraPdf(fileBuffer, fileName) {
+  return uploadBeritaAcaraPdfToStorage(fileBuffer, fileName);
 }

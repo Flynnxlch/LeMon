@@ -116,6 +116,20 @@ const formatDateOnly = (iso) => {
   });
 };
 
+/** Batasi teks hingga 15 kata (untuk tampilan "oleh: username" di Berita Acara). */
+function truncateTo15Words(str) {
+  if (str == null || String(str).trim() === '') return '—';
+  const words = String(str).trim().split(/\s+/);
+  return words.slice(0, 15).join(' ');
+}
+
+/** Judul Berita Acara untuk list: judul dasar + (username, max 15 kata). */
+function getBeritaAcaraDisplayTitle(item) {
+  const base = (item.title || '').replace(/\s*\([^)]*\)\s*$/, '').trim() || 'Berita Acara';
+  const byUser = truncateTo15Words(item.user?.name ?? item.user?.email ?? null);
+  return byUser ? `${base} (${byUser})` : base;
+}
+
 const EVENT_LABELS = {
   created: 'Aset dibuat',
   assigned: 'Aset di-assign',
@@ -188,9 +202,10 @@ const TABS = [
   { id: 'current', label: 'Informasi Saat Ini' },
   { id: 'past', label: 'Past Holder' },
   { id: 'history', label: 'Asset History' },
+  { id: 'beritaAcara', label: 'Berita Acara' },
 ];
 
-const AssetDetailOverlay = memo(({ isOpen, onClose, asset, pastHolders = [], history = [], isLoadingHistory = false }) => {
+const AssetDetailOverlay = memo(({ isOpen, onClose, asset, pastHolders = [], history = [], beritaAcaraList = [], isLoadingHistory = false, isLoadingBeritaAcara = false }) => {
   const [activeTab, setActiveTab] = useState('current');
   const [mapPoint, setMapPoint] = useState(null);
 
@@ -423,6 +438,33 @@ const AssetDetailOverlay = memo(({ isOpen, onClose, asset, pastHolders = [], his
                     <ul className="space-y-3">
                       {history.map((entry) => (
                         <HistoryItem key={entry.id} entry={entry} />
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+
+              {activeTab === 'beritaAcara' && (
+                <div className="flex flex-col h-full min-h-0">
+                  <h3 className="text-sm font-semibold text-neutral-700 mb-3 shrink-0">Daftar Berita Acara</h3>
+                  {isLoadingBeritaAcara ? (
+                    <p className="text-sm text-neutral-500 py-4">Memuat berita acara...</p>
+                  ) : beritaAcaraList.length === 0 ? (
+                    <p className="text-sm text-neutral-500 italic py-4">Belum ada berita acara.</p>
+                  ) : (
+                    <ul className="space-y-2 overflow-y-auto">
+                      {beritaAcaraList.map((item) => (
+                        <li key={item.id}>
+                          <button
+                            type="button"
+                            onClick={() => window.open(item.pdfUrl, '_blank', 'noopener,noreferrer')}
+                            className="w-full text-left p-3 rounded-lg border border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50 transition-colors flex items-center gap-2"
+                          >
+                            <span className="text-sm font-medium text-neutral-900">{getBeritaAcaraDisplayTitle(item)}</span>
+                            <span className="text-xs text-neutral-500">{formatDateTime(item.createdAt)}</span>
+                            <span className="ml-auto text-xs text-blue-600">Buka PDF →</span>
+                          </button>
+                        </li>
                       ))}
                     </ul>
                   )}

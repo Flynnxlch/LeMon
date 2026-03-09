@@ -2,7 +2,7 @@ import { Router } from 'express';
 import * as reassignmentRequestController from '../controllers/reassignmentRequestController.js';
 import { authMiddleware, requireRole } from '../middleware/auth.js';
 import { validateBody, validateQuery } from '../middleware/validate.js';
-import { uploadConditionPhotos, validateImageMagicArray, uploadConditionPhotoUrls } from '../middleware/upload.js';
+import { uploadBeritaAcaraPdf, uploadConditionPhotos, validateBeritaAcaraPdf, validateImageMagicArray, uploadConditionPhotoUrls } from '../middleware/upload.js';
 import { createReassignmentRequestSchema, getReassignmentRequestsQuerySchema } from '../validators/reassignmentRequest.js';
 
 const router = Router();
@@ -30,7 +30,7 @@ router.post(
   validateBody(createReassignmentRequestSchema),
   reassignmentRequestController.createReassignmentRequest
 );
-router.patch('/:id/approve', authMiddleware, requireRole('Admin Pusat'), reassignmentRequestController.approveReassignmentRequest);
+router.patch('/:id/approve', authMiddleware, requireRole('Admin Pusat'), uploadBeritaAcaraPdf, validateBeritaAcaraPdf, reassignmentRequestController.approveReassignmentRequest);
 router.patch('/:id/reject', authMiddleware, requireRole('Admin Pusat'), reassignmentRequestController.rejectReassignmentRequest);
 
 export default router;

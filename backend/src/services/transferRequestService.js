@@ -90,11 +90,16 @@ export async function createTransferRequest(data, userId, userRole, userBranchId
   return mapTransferRequest(tr);
 }
 
-export async function approveTransferRequest(requestId) {
+export async function getTransferRequestById(requestId) {
   const tr = await prisma.transferRequest.findUnique({
     where: { id: requestId },
     select: { id: true, assetId: true, toBranchId: true, status: true, purpose: true },
   });
+  return tr;
+}
+
+export async function approveTransferRequest(requestId) {
+  const tr = await getTransferRequestById(requestId);
   if (!tr) throw new Error('Transfer request not found');
   if (tr.status !== 'Pending') throw new Error('Request already processed');
   const isRepairTransfer = tr.purpose === 'repair';

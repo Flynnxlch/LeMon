@@ -1,3 +1,4 @@
+import * as beritaAcaraService from '../services/beritaAcaraService.js';
 import * as assetRequestService from '../services/assetRequestService.js';
 import * as assetService from '../services/assetService.js';
 
@@ -36,19 +37,38 @@ export async function createAssetRequest(req, res, next) {
 export async function approveAssetRequest(req, res, next) {
   try {
     let photoUrl = null;
-    if (req.file) {
+    const files = req.files || {};
+    const photo = files.photo && files.photo[0];
+    if (photo) {
       const { url } = await assetService.uploadAssetPhoto(
-        req.file.buffer,
-        req.file.originalname,
-        req.file.mimetype
+        photo.buffer,
+        photo.originalname,
+        photo.mimetype
       );
       photoUrl = url;
     }
-    await assetRequestService.approveAssetRequest(
+    const beritaFile = files.beritaAcara && files.beritaAcara[0];
+    if (!beritaFile) {
+      return res.status(400).json({ success: false, error: 'Berita Acara (PDF) wajib diunggah.' });
+    }
+    const { url: pdfUrl } = await assetService.uploadBeritaAcaraPdf(
+      beritaFile.buffer,
+      beritaFile.originalname
+    );
+    const result = await assetRequestService.approveAssetRequest(
       req.params.id,
       req.body,
       photoUrl
     );
+    if (result.assetId) {
+      await beritaAcaraService.createBeritaAcara({
+        assetId: result.assetId,
+        eventType: 'asset_request_approved',
+        title: 'Request aset disetujui',
+        pdfUrl,
+        userId: req.user?.id,
+      });
+    }
     res.json({ success: true, data: { ok: true } });
   } catch (err) {
     if (err.message === 'Asset request not found' || err.message === 'Request already processed') {

@@ -1,6 +1,7 @@
 import { memo, useMemo, useState, useEffect } from 'react';
 import { HiX, HiArrowRight } from 'react-icons/hi';
 import Button from '../../common/Button/Button';
+import PdfUpload from '../../common/PdfUpload';
 import ModalWrapper from '../../common/ModalWrapper/ModalWrapper';
 
 const AssetTransferModal = memo(({ isOpen, onClose, onSubmit, asset, assets = [], branches = [], currentBranchId, isDirectTransfer = false }) => {
@@ -9,6 +10,7 @@ const AssetTransferModal = memo(({ isOpen, onClose, onSubmit, asset, assets = []
     toBranchId: '',
     notes: '',
   });
+  const [beritaAcara, setBeritaAcara] = useState(null);
   const [errors, setErrors] = useState({});
 
   const selectedAsset = useMemo(() => {
@@ -51,6 +53,10 @@ const AssetTransferModal = memo(({ isOpen, onClose, onSubmit, asset, assets = []
       newErrors.notes = 'Please provide a reason (at least 10 characters)';
     }
 
+    if (isDirectTransfer && !beritaAcara) {
+      newErrors.beritaAcara = 'Berita Acara (PDF) wajib diunggah';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -74,17 +80,17 @@ const AssetTransferModal = memo(({ isOpen, onClose, onSubmit, asset, assets = []
       notes: formData.notes,
       status: 'Pending',
       requestDate: new Date().toISOString(),
-      requestedBy: 'Current User', // Should be replaced with actual user name
+      requestedBy: 'Current User',
     };
 
-    onSubmit(transferRequest);
+    onSubmit(transferRequest, isDirectTransfer ? beritaAcara : null);
     
-    // Reset form
     setFormData({
       assetId: '',
       toBranchId: '',
       notes: '',
     });
+    setBeritaAcara(null);
   };
 
   const handleClose = () => {
@@ -93,6 +99,7 @@ const AssetTransferModal = memo(({ isOpen, onClose, onSubmit, asset, assets = []
       toBranchId: '',
       notes: '',
     });
+    setBeritaAcara(null);
     setErrors({});
     onClose();
   };
@@ -228,6 +235,15 @@ const AssetTransferModal = memo(({ isOpen, onClose, onSubmit, asset, assets = []
               <p className="mt-1 text-sm text-red-500">{errors.notes}</p>
             )}
           </div>
+
+          {isDirectTransfer && (
+            <PdfUpload
+              file={beritaAcara}
+              onChange={setBeritaAcara}
+              error={errors.beritaAcara}
+              required
+            />
+          )}
 
           {/* Warning - only for request flow (Admin Cabang) */}
           {!isDirectTransfer && (

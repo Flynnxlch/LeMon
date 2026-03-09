@@ -164,12 +164,14 @@ export const api = {
     },
     get: (id) => request(`assets/${id}`),
     getHistory: (id) => request(`assets/${id}/history`).then((res) => res?.data ?? []),
-    create: (body, photoFile) => {
+    getBeritaAcara: (id) => request(`assets/${id}/berita-acara`).then((res) => res?.data ?? []),
+    create: (body, photoFile, beritaAcaraFile) => {
       const form = new FormData();
       Object.entries(body).forEach(([k, v]) => {
         if (v != null) form.append(k, v === '' ? '' : String(v));
       });
       if (photoFile) form.append('photo', photoFile);
+      if (beritaAcaraFile) form.append('beritaAcara', beritaAcaraFile);
       return request('assets', { method: 'POST', body: form });
     },
     update: (id, body) => {
@@ -192,12 +194,16 @@ export const api = {
       });
     },
     getRepair: (id) => request(`assets/${id}/repair`).then((res) => res?.data ?? null),
-    startRepair: (id, body) =>
-      request(`assets/${id}/start-repair`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      }),
+    startRepair: (id, body, beritaAcaraFile) => {
+      const form = new FormData();
+      if (body) {
+        Object.entries(body).forEach(([k, v]) => {
+          if (v != null && v !== '') form.append(k, String(v));
+        });
+      }
+      if (beritaAcaraFile) form.append('beritaAcara', beritaAcaraFile);
+      return request(`assets/${id}/start-repair`, { method: 'POST', body: form });
+    },
     completeRepair: (id, bodyOrFormData) => {
       if (bodyOrFormData instanceof FormData) {
         return request(`assets/${id}/complete-repair`, { method: 'POST', body: bodyOrFormData });
@@ -218,13 +224,28 @@ export const api = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       }),
-    direct: (body) =>
-      request('transfer-requests/direct', {
+    direct: (body, beritaAcaraFile) => {
+      if (beritaAcaraFile) {
+        const form = new FormData();
+        form.append('assetId', body.assetId);
+        form.append('toBranchId', body.toBranchId);
+        form.append('beritaAcara', beritaAcaraFile);
+        return request('transfer-requests/direct', { method: 'POST', body: form });
+      }
+      return request('transfer-requests/direct', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
-      }),
-    approve: (id) => request(`transfer-requests/${id}/approve`, { method: 'PATCH' }),
+      });
+    },
+    approve: (id, beritaAcaraFile) => {
+      if (beritaAcaraFile) {
+        const form = new FormData();
+        form.append('beritaAcara', beritaAcaraFile);
+        return request(`transfer-requests/${id}/approve`, { method: 'PATCH', body: form });
+      }
+      return request(`transfer-requests/${id}/approve`, { method: 'PATCH' });
+    },
     reject: (id) => request(`transfer-requests/${id}/reject`, { method: 'PATCH' }),
   },
   reassignmentRequests: {
@@ -240,7 +261,14 @@ export const api = {
         body: JSON.stringify(bodyOrFormData),
       });
     },
-    approve: (id) => request(`reassignment-requests/${id}/approve`, { method: 'PATCH' }),
+    approve: (id, beritaAcaraFile) => {
+      if (beritaAcaraFile) {
+        const form = new FormData();
+        form.append('beritaAcara', beritaAcaraFile);
+        return request(`reassignment-requests/${id}/approve`, { method: 'PATCH', body: form });
+      }
+      return request(`reassignment-requests/${id}/approve`, { method: 'PATCH' });
+    },
     reject: (id) => request(`reassignment-requests/${id}/reject`, { method: 'PATCH' }),
   },
   settings: {
@@ -263,12 +291,13 @@ export const api = {
       if (photoFile) form.append('photo', photoFile);
       return request('asset-requests', { method: 'POST', body: form });
     },
-    approve: (id, body = {}, photoFile) => {
+    approve: (id, body = {}, photoFile, beritaAcaraFile) => {
       const form = new FormData();
-      Object.entries(body).forEach(([k, v]) => {
+      Object.entries(body || {}).forEach(([k, v]) => {
         if (v != null && v !== '') form.append(k, String(v));
       });
       if (photoFile) form.append('photo', photoFile);
+      if (beritaAcaraFile) form.append('beritaAcara', beritaAcaraFile);
       return request(`asset-requests/${id}/approve`, { method: 'PATCH', body: form });
     },
     reject: (id) => request(`asset-requests/${id}/reject`, { method: 'PATCH' }),

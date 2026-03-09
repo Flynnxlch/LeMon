@@ -3,6 +3,7 @@ import { memo, useCallback, useEffect, useState } from 'react';
 import { HiUpload, HiX } from 'react-icons/hi';
 import Button from '../../common/Button/Button';
 import Input from '../../common/Input/Input';
+import PdfUpload from '../../common/PdfUpload';
 import ModalWrapper from '../../common/ModalWrapper/ModalWrapper';
 import { ASSET_TYPES, getBrandsForType, getModelsForBrand } from '../../../utils/assetTypeOptions';
 
@@ -17,6 +18,7 @@ const AddAssetModal = memo(({ isOpen, onClose, onSubmit, branches = [], branches
     contractEndDate: '',
     photo: null,
     photoPreview: null,
+    beritaAcara: null,
   });
   const [errors, setErrors] = useState({});
   const [isUploading, setIsUploading] = useState(false);
@@ -127,6 +129,9 @@ const AddAssetModal = memo(({ isOpen, onClose, onSubmit, branches = [], branches
     if (!formData.photo) {
       newErrors.photo = 'Photo is required';
     }
+    if (!formData.beritaAcara) {
+      newErrors.beritaAcara = 'Berita Acara (PDF) wajib diunggah';
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -154,6 +159,7 @@ const AddAssetModal = memo(({ isOpen, onClose, onSubmit, branches = [], branches
         contractEndDate: '',
         photo: null,
         photoPreview: null,
+        beritaAcara: null,
       });
       setErrors({});
     } catch (err) {
@@ -176,6 +182,7 @@ const AddAssetModal = memo(({ isOpen, onClose, onSubmit, branches = [], branches
       contractEndDate: '',
       photo: null,
       photoPreview: null,
+      beritaAcara: null,
     });
     setErrors({});
     onClose();
@@ -413,6 +420,17 @@ const AddAssetModal = memo(({ isOpen, onClose, onSubmit, branches = [], branches
               <p className="mt-1 text-sm text-red-500">{errors.photo}</p>
             )}
           </div>
+
+          {/* Berita Acara PDF */}
+          <PdfUpload
+            file={formData.beritaAcara}
+            onChange={(file) => {
+              setFormData(prev => ({ ...prev, beritaAcara: file }));
+              setErrors(prev => ({ ...prev, beritaAcara: '' }));
+            }}
+            error={errors.beritaAcara}
+            required
+          />
 
           {/* Form Actions */}
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">

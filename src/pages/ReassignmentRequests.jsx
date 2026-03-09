@@ -3,6 +3,7 @@ import { HiCheck, HiX, HiArrowRight, HiChevronLeft, HiChevronRight } from 'react
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import Button from '../components/common/Button/Button';
 import Card from '../components/common/Card/Card';
+import PdfUpload from '../components/common/PdfUpload';
 import MainLayout from '../components/layout/MainLayout/MainLayout';
 import ModalWrapper from '../components/common/ModalWrapper/ModalWrapper';
 import { useToast } from '../context/ToastContext';
@@ -41,6 +42,7 @@ const ReassignmentRequests = memo(() => {
   const toast = useToast();
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedRequest, setSelectedRequest] = useState(null);
+  const [beritaAcara, setBeritaAcara] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
 
   const { data: requests = [], isLoading: loading } = useReassignmentRequests();
@@ -62,6 +64,10 @@ const ReassignmentRequests = memo(() => {
     setCurrentPage(1);
   }, [statusFilter]);
 
+  useEffect(() => {
+    if (selectedRequest) setBeritaAcara(null);
+  }, [selectedRequest?.id]);
+
   const statusCounts = useMemo(
     () => ({
       all: requests.length,
@@ -72,18 +78,24 @@ const ReassignmentRequests = memo(() => {
     [requests]
   );
 
-  const handleApprove = useCallback(
-    (request) => {
-      approveMutation.mutate(request.id, {
+  const handleApprove = useCallback(() => {
+    if (!selectedRequest) return;
+    if (!beritaAcara) {
+      toast.error('Berita Acara (PDF) wajib diunggah sebelum approve.');
+      return;
+    }
+    approveMutation.mutate(
+      { id: selectedRequest.id, beritaAcaraFile: beritaAcara },
+      {
         onSuccess: () => {
-          setSelectedRequest((prev) => (prev?.id === request.id ? { ...prev, status: 'Approved' } : prev));
+          setSelectedRequest((prev) => (prev ? { ...prev, status: 'Approved' } : null));
+          setBeritaAcara(null);
           toast.success('Permintaan reassignment disetujui.');
         },
         onError: (err) => toast.error(err.message || 'Gagal approve.'),
-      });
-    },
-    [approveMutation, toast]
-  );
+      }
+    );
+  }, [selectedRequest, beritaAcara, approveMutation, toast]);
 
   const handleReject = useCallback(
     (requestId) => {
@@ -98,7 +110,10 @@ const ReassignmentRequests = memo(() => {
     [rejectMutation, toast]
   );
 
-  const closeDetail = useCallback(() => setSelectedRequest(null), []);
+  const closeDetail = useCallback(() => {
+    setSelectedRequest(null);
+    setBeritaAcara(null);
+  }, []);
 
   const goToPage = useCallback((page) => {
     setCurrentPage((p) => Math.max(1, Math.min(page, totalPages)));
@@ -325,11 +340,15 @@ const ReassignmentRequests = memo(() => {
               </div>
 
               {selectedRequest.status === 'Pending' && (
-                <div className="flex flex-wrap gap-3 mt-8 pt-6 border-t border-neutral-200">
+                <>
+                  <div className="mt-6">
+                    <PdfUpload file={beritaAcara} onChange={setBeritaAcara} required />
+                  </div>
+                  <div className="flex flex-wrap gap-3 mt-8 pt-6 border-t border-neutral-200">
                   <Button
                     variant="primary"
                     size="md"
-                    onClick={() => handleApprove(selectedRequest)}
+                    onClick={handleApprove}
                     className="bg-black hover:bg-neutral-800 transition-all duration-200"
                   >
                     <HiCheck className="w-5 h-5 mr-2 inline" />
@@ -345,6 +364,7 @@ const ReassignmentRequests = memo(() => {
                     Reject
                   </Button>
                 </div>
+                </>
               )}
             </div>
           </ModalWrapper>

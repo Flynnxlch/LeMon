@@ -95,6 +95,13 @@ export async function createReassignmentRequest(data, userId, userRole, userBran
   return mapReassignmentRequest(rr);
 }
 
+export async function getReassignmentRequestById(requestId) {
+  return prisma.reassignmentRequest.findUnique({
+    where: { id: requestId },
+    select: { id: true, assetId: true, newHolderFullName: true, status: true },
+  });
+}
+
 export async function approveReassignmentRequest(requestId) {
   const rr = await prisma.reassignmentRequest.findUnique({
     where: { id: requestId },

@@ -12,6 +12,7 @@ import MainLayout from '../components/layout/MainLayout/MainLayout';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import {
+    useAssetBeritaAcara,
     useAssetDetail,
     useAssetHistory,
     useAssets,
@@ -66,6 +67,9 @@ const Assets = memo(() => {
     enabled: !!selectedAssetId,
   });
   const { data: assetHistory = [], isLoading: historyLoading } = useAssetHistory(selectedAssetId, {
+    enabled: !!selectedAssetId && showDetailOverlay,
+  });
+  const { data: beritaAcaraList = [], isLoading: beritaAcaraLoading } = useAssetBeritaAcara(selectedAssetId, {
     enabled: !!selectedAssetId && showDetailOverlay,
   });
 
@@ -128,6 +132,7 @@ const Assets = memo(() => {
           contractEndDate: assetData.contractEndDate ? `${assetData.contractEndDate}T00:00:00.000Z` : undefined,
         },
         photo: assetData.photo || null,
+        beritaAcara: assetData.beritaAcara || null,
       });
       setIsAddModalOpen(false);
       toast.success('Aset berhasil ditambahkan.');
@@ -165,12 +170,14 @@ const Assets = memo(() => {
   );
 
   const handleSubmitTransferRequest = useCallback(
-    async (transferRequest) => {
+    async (transferRequest, beritaAcaraFile = null) => {
       if (isAdminPusat) {
         await directTransferMutation.mutateAsync({
-          assetId: transferRequest.assetId,
-          toBranchId: transferRequest.toBranchId,
-          notes: transferRequest.notes || undefined,
+          body: {
+            assetId: transferRequest.assetId,
+            toBranchId: transferRequest.toBranchId,
+          },
+          beritaAcaraFile: beritaAcaraFile || undefined,
         });
         setIsTransferModalOpen(false);
         setAssetToTransfer(null);
@@ -309,7 +316,9 @@ const Assets = memo(() => {
         asset={selectedAsset}
         pastHolders={selectedAsset?.pastHolders ?? []}
         history={assetHistory}
+        beritaAcaraList={beritaAcaraList}
         isLoadingHistory={historyLoading}
+        isLoadingBeritaAcara={beritaAcaraLoading}
       />
     </MainLayout>
   );

@@ -1,5 +1,6 @@
 import multer from 'multer';
 import config from '../config/index.js';
+import { BERITA_ACARA_MAX_BYTES } from '../lib/supabase.js';
 import * as assetService from '../services/assetService.js';
 
 /** Upload req.files to Supabase and return array of public URLs. */
@@ -89,3 +90,204 @@ export const uploadConditionPhotos = multer({
   limits: { ...limits, fileSize: config.uploadMaxSize },
   fileFilter,
 }).array('photos', 4);
+
+// ─── Berita Acara (PDF only, max 500KB) ─────────────────────────────────────
+const PDF_MAGIC = [0x25, 0x50, 0x44, 0x46]; // %PDF
+
+function checkPdfMagic(buffer) {
+  if (!buffer || buffer.length < 4) return false;
+  const u8 = new Uint8Array(buffer);
+  return PDF_MAGIC.every((byte, i) => u8[i] === byte);
+}
+
+const pdfFileFilter = (req, file, cb) => {
+  if (file.mimetype === 'application/pdf') {
+    cb(null, true);
+  } else {
+    cb(new Error('Hanya file PDF yang diperbolehkan untuk Berita Acara.'), false);
+  }
+};
+
+/** Single PDF for Berita Acara. Field name: "beritaAcara". Max 500KB. */
+export const uploadBeritaAcaraPdf = multer({
+  storage,
+  limits: { fileSize: BERITA_ACARA_MAX_BYTES },
+  fileFilter: pdfFileFilter,
+}).single('beritaAcara');
+
+/** After multer: validate PDF magic bytes and require file (for single beritaAcara). */
+export function validateBeritaAcaraPdf(req, res, next) {
+  const file = req.file || (req.files && req.files.beritaAcara && req.files.beritaAcara[0]);
+  if (!file) {
+    return res.status(400).json({ success: false, error: 'Berita Acara (PDF) wajib diunggah.' });
+  }
+  if (file.size > BERITA_ACARA_MAX_BYTES) {
+    return res.status(400).json({
+      success: false,
+      error: `Berita Acara maksimal ${BERITA_ACARA_MAX_BYTES / 1024}KB. Ukuran saat ini: ${(file.size / 1024).toFixed(1)}KB.`,
+    });
+  }
+  if (!checkPdfMagic(file.buffer)) {
+    return res.status(400).json({ success: false, error: 'File bukan PDF yang valid. Hanya PDF diperbolehkan.' });
+  }
+  next();
+}
+
+const photoAndPdfFilter = (req, file, cb) => {
+  if (file.fieldname === 'photo') {
+    const allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (allowed.includes(file.mimetype)) return cb(null, true);
+    return cb(new Error('Foto aset: hanya JPEG, PNG, GIF, WebP.'), false);
+  }
+  if (file.fieldname === 'beritaAcara') {
+    if (file.mimetype === 'application/pdf') return cb(null, true);
+    return cb(new Error('Berita Acara: hanya PDF.'), false);
+  }
+  cb(null, true);
+};
+
+/** Create Asset: photo (1) + beritaAcara (1). Both required. */
+export const uploadPhotoAndBeritaAcara = multer({
+  storage,
+  limits: { fileSize: config.uploadMaxSize },
+  fileFilter: photoAndPdfFilter,
+}).fields([
+  { name: 'photo', maxCount: 1 },
+  { name: 'beritaAcara', maxCount: 1 },
+]);
+
+/** Approve asset request: photo optional, beritaAcara required. */
+export function validateApproveAssetRequestFiles(req, res, next) {
+  const files = req.files || {};
+  const beritaAcara = files.beritaAcara && files.beritaAcara[0];
+  if (!beritaAcara) {
+    return res.status(400).json({ success: false, error: 'Berita Acara (PDF) wajib diunggah.' });
+  }
+  if (beritaAcara.size > BERITA_ACARA_MAX_BYTES) {
+    return res.status(400).json({
+      success: false,
+      error: `Berita Acara maksimal ${BERITA_ACARA_MAX_BYTES / 1024}KB.`,
+    });
+  }
+  if (!checkPdfMagic(beritaAcara.buffer)) {
+    return res.status(400).json({ success: false, error: 'Berita Acara: file bukan PDF yang valid.' });
+  }
+  const photo = files.photo && files.photo[0];
+  if (photo && !checkMagic(photo.buffer, photo.mimetype)) {
+    return res.status(400).json({ success: false, error: 'Foto aset: file bukan gambar yang valid.' });
+  }
+  req.file = photo || null;
+  req.beritaAcaraFile = beritaAcara;
+  next();
+}
+
+/** Require both photo and beritaAcara for create asset; validate sizes and magic. */
+export function validateCreateAssetFiles(req, res, next) {
+  const files = req.files || {};
+  const photo = files.photo && files.photo[0];
+  const beritaAcara = files.beritaAcara && files.beritaAcara[0];
+  if (!photo) {
+    return res.status(400).json({ success: false, error: 'Foto aset wajib diunggah.' });
+  }
+  if (!beritaAcara) {
+    return res.status(400).json({ success: false, error: 'Berita Acara (PDF) wajib diunggah.' });
+  }
+  if (!checkMagic(photo.buffer, photo.mimetype)) {
+    return res.status(400).json({ success: false, error: 'Foto aset: file bukan gambar yang valid.' });
+  }
+  if (beritaAcara.size > BERITA_ACARA_MAX_BYTES) {
+    return res.status(400).json({
+      success: false,
+      error: `Berita Acara maksimal ${BERITA_ACARA_MAX_BYTES / 1024}KB.`,
+    });
+  }
+  if (!checkPdfMagic(beritaAcara.buffer)) {
+    return res.status(400).json({ success: false, error: 'Berita Acara: file bukan PDF yang valid.' });
+  }
+  req.file = photo;
+  req.beritaAcaraFile = beritaAcara;
+  next();
+}
+
+const photosAndPdfFilter = (req, file, cb) => {
+  if (file.fieldname === 'photos') {
+    const allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (allowed.includes(file.mimetype)) return cb(null, true);
+    return cb(new Error('Foto kondisi: hanya JPEG, PNG, GIF, WebP.'), false);
+  }
+  if (file.fieldname === 'beritaAcara') {
+    if (file.mimetype === 'application/pdf') return cb(null, true);
+    return cb(new Error('Berita Acara: hanya PDF.'), false);
+  }
+  cb(null, true);
+};
+
+/** Assign / Update condition / Complete repair: photos (max 4) + beritaAcara (1). */
+export const uploadPhotosAndBeritaAcara = multer({
+  storage,
+  limits: { fileSize: config.uploadMaxSize },
+  fileFilter: photosAndPdfFilter,
+}).fields([
+  { name: 'photos', maxCount: 4 },
+  { name: 'beritaAcara', maxCount: 1 },
+]);
+
+/** Validate photos array (1–4) and beritaAcara PDF for assign/update/completeRepair. */
+export function validatePhotosAndBeritaAcara(req, res, next) {
+  const files = req.files || {};
+  const photos = files.photos || [];
+  const beritaAcara = files.beritaAcara && files.beritaAcara[0];
+  if (photos.length < 1 || photos.length > 4) {
+    return res.status(400).json({ success: false, error: 'Foto kondisi: minimal 1, maksimal 4.' });
+  }
+  if (!beritaAcara) {
+    return res.status(400).json({ success: false, error: 'Berita Acara (PDF) wajib diunggah.' });
+  }
+  for (const file of photos) {
+    if (!checkMagic(file.buffer, file.mimetype)) {
+      return res.status(400).json({ success: false, error: 'Foto kondisi: file bukan gambar yang valid.' });
+    }
+  }
+  if (beritaAcara.size > BERITA_ACARA_MAX_BYTES) {
+    return res.status(400).json({
+      success: false,
+      error: `Berita Acara maksimal ${BERITA_ACARA_MAX_BYTES / 1024}KB.`,
+    });
+  }
+  if (!checkPdfMagic(beritaAcara.buffer)) {
+    return res.status(400).json({ success: false, error: 'Berita Acara: file bukan PDF yang valid.' });
+  }
+  req.files = photos;
+  req.beritaAcaraFile = beritaAcara;
+  next();
+}
+
+/** Update asset: photos (0–4) optional, beritaAcara (1) required. */
+export function validateUpdateWithBeritaAcara(req, res, next) {
+  const files = req.files || {};
+  const photos = files.photos || [];
+  const beritaAcara = files.beritaAcara && files.beritaAcara[0];
+  if (photos.length > 4) {
+    return res.status(400).json({ success: false, error: 'Foto kondisi: maksimal 4.' });
+  }
+  if (!beritaAcara) {
+    return res.status(400).json({ success: false, error: 'Berita Acara (PDF) wajib diunggah.' });
+  }
+  for (const file of photos) {
+    if (!checkMagic(file.buffer, file.mimetype)) {
+      return res.status(400).json({ success: false, error: 'Foto kondisi: file bukan gambar yang valid.' });
+    }
+  }
+  if (beritaAcara.size > BERITA_ACARA_MAX_BYTES) {
+    return res.status(400).json({
+      success: false,
+      error: `Berita Acara maksimal ${BERITA_ACARA_MAX_BYTES / 1024}KB.`,
+    });
+  }
+  if (!checkPdfMagic(beritaAcara.buffer)) {
+    return res.status(400).json({ success: false, error: 'Berita Acara: file bukan PDF yang valid.' });
+  }
+  req.files = photos;
+  req.beritaAcaraFile = beritaAcara;
+  next();
+}

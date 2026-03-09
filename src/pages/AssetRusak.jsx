@@ -5,6 +5,7 @@ import { api } from '../api/client';
 import Button from '../components/common/Button/Button';
 import Card from '../components/common/Card/Card';
 import Input from '../components/common/Input/Input';
+import PdfUpload from '../components/common/PdfUpload';
 import PhotoUpload from '../components/common/PhotoUpload/PhotoUpload';
 import GeolocationPicker from '../components/common/GeolocationPicker/GeolocationPicker';
 import MainLayout from '../components/layout/MainLayout/MainLayout';
@@ -44,6 +45,8 @@ const AssetRusak = memo(() => {
     address: '',
   });
   const [photos, setPhotos] = useState([]);
+  const [perbaikanBeritaAcara, setPerbaikanBeritaAcara] = useState(null);
+  const [selesaiBeritaAcara, setSelesaiBeritaAcara] = useState(null);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [repairInfo, setRepairInfo] = useState(null);
@@ -67,6 +70,7 @@ const AssetRusak = memo(() => {
       toBranchId: asset?.branch_id ?? '',
       notes: '',
     });
+    setPerbaikanBeritaAcara(null);
     setErrors({});
     setShowPerbaikanModal(true);
   }, []);
@@ -74,6 +78,7 @@ const AssetRusak = memo(() => {
   const openSelesai = useCallback(async (asset) => {
     setSelectedAsset(asset);
     setPhotos([]);
+    setSelesaiBeritaAcara(null);
     setSelesaiForm({
       returnToPreviousUser: true,
       holderFullName: asset?.holder?.fullName ?? '',
@@ -142,6 +147,7 @@ const AssetRusak = memo(() => {
       if (!perbaikanForm.toBranchId?.trim()) newErrors.toBranchId = 'Pilih cabang tujuan';
       if (perbaikanForm.toBranchId === selectedAsset?.branch_id) newErrors.toBranchId = 'Pilih cabang yang berbeda';
     }
+    if (!perbaikanBeritaAcara) newErrors.beritaAcara = 'Berita Acara (PDF) wajib diunggah';
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
 
@@ -151,24 +157,26 @@ const AssetRusak = memo(() => {
         repairType: perbaikanForm.repairType,
         toBranchId: perbaikanForm.repairType === 'transfer' ? perbaikanForm.toBranchId : undefined,
         notes: perbaikanForm.notes?.trim() || undefined,
-      });
+      }, perbaikanBeritaAcara);
       toast.success(
         perbaikanForm.repairType === 'at_branch'
           ? 'Status aset diubah menjadi Dalam Perbaikan (di cabang ini).'
           : 'Permintaan transfer untuk perbaikan telah dibuat. Setelah disetujui, status akan Dalam Perbaikan.'
       );
       refetch();
+      setPerbaikanBeritaAcara(null);
       closePerbaikan();
     } catch (err) {
       toast.error(err?.message || 'Gagal memulai perbaikan.');
     } finally {
       setIsSubmitting(false);
     }
-  }, [perbaikanForm, selectedAsset, toast, refetch, closePerbaikan]);
+  }, [perbaikanForm, perbaikanBeritaAcara, selectedAsset, toast, refetch, closePerbaikan]);
 
   const submitSelesai = useCallback(async () => {
     const newErrors = {};
     if (photos.length < 1 || photos.length > 4) newErrors.photos = 'Upload 1–4 foto kondisi aset';
+    if (!selesaiBeritaAcara) newErrors.beritaAcara = 'Berita Acara (PDF) wajib diunggah';
     if (!selesaiForm.returnToPreviousUser) {
       if (!selesaiForm.holderFullName?.trim()) newErrors.holderFullName = 'Nama holder wajib';
       if (!selesaiForm.holderNip?.trim()) newErrors.holderNip = 'NIP wajib';
@@ -197,27 +205,23 @@ const AssetRusak = memo(() => {
         payload.holderEmail = selesaiForm.holderEmail;
         payload.holderPhone = selesaiForm.holderPhone;
       }
-      const hasFiles = photos.length > 0 && photos.every((p) => p.file);
-      let body;
-      if (hasFiles) {
-        body = new FormData();
-        Object.entries(payload).forEach(([k, v]) => {
-          if (v != null && v !== '') body.append(k, typeof v === 'boolean' ? String(v) : String(v));
-        });
-        photos.forEach((p) => p.file && body.append('photos', p.file));
-      } else {
-        body = { ...payload, updateImages: [] };
-      }
+      const body = new FormData();
+      Object.entries(payload).forEach(([k, v]) => {
+        if (v != null && v !== '') body.append(k, typeof v === 'boolean' ? String(v) : String(v));
+      });
+      photos.forEach((p) => p.file && body.append('photos', p.file));
+      if (selesaiBeritaAcara) body.append('beritaAcara', selesaiBeritaAcara);
       await api.assets.completeRepair(selectedAsset.id, body);
       toast.success('Perbaikan selesai. Aset kembali Available.');
       refetch();
+      setSelesaiBeritaAcara(null);
       closeSelesai();
     } catch (err) {
       toast.error(err?.message || 'Gagal menyelesaikan perbaikan.');
     } finally {
       setIsSubmitting(false);
     }
-  }, [selesaiForm, photos, selectedAsset, toast, refetch, closeSelesai]);
+  }, [selesaiForm, photos, selesaiBeritaAcara, selectedAsset, toast, refetch, closeSelesai]);
 
   const branchesForTransfer = useMemo(() => {
     if (!selectedAsset?.branch_id) return branches;
@@ -435,6 +439,12 @@ const AssetRusak = memo(() => {
                   </div>
                 </>
               )}
+              <PdfUpload
+                file={perbaikanBeritaAcara}
+                onChange={setPerbaikanBeritaAcara}
+                error={errors.beritaAcara}
+                required
+              />
             </div>
             <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-neutral-200">
               <Button type="button" variant="secondary" onClick={closePerbaikan} disabled={isSubmitting}>Batal</Button>
@@ -469,6 +479,7 @@ const AssetRusak = memo(() => {
                 <label className="block text-sm font-medium text-neutral-700 mb-2">Foto kondisi aset setelah perbaikan (1–4 foto)</label>
                 <PhotoUpload photos={photos} onChange={setPhotos} maxPhotos={4} label="" helperText="Upload 1–4 foto" error={errors.photos} />
               </div>
+              <PdfUpload file={selesaiBeritaAcara} onChange={setSelesaiBeritaAcara} error={errors.beritaAcara} required />
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-2">Lokasi (opsional)</label>
                 <GeolocationPicker

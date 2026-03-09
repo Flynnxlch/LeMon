@@ -6,6 +6,7 @@ import Button from '../components/common/Button/Button';
 import Card from '../components/common/Card/Card';
 import GeolocationPicker from '../components/common/GeolocationPicker/GeolocationPicker';
 import Input from '../components/common/Input/Input';
+import PdfUpload from '../components/common/PdfUpload';
 import PhotoUpload from '../components/common/PhotoUpload/PhotoUpload';
 import AssetInventoryTable from '../components/features/AssetInventoryTable/AssetInventoryTable';
 import MainLayout from '../components/layout/MainLayout/MainLayout';
@@ -47,6 +48,7 @@ const AssignAsset = memo(() => {
     reassignReason: '',
   });
   const [photos, setPhotos] = useState([]);
+  const [beritaAcara, setBeritaAcara] = useState(null);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const updateVariantRef = useRef('Available'); // 'Available' | 'Rusak' for update submit
@@ -90,6 +92,7 @@ const AssignAsset = memo(() => {
   const getFormTitle = useCallback(() => {
     if (activeAction === 'assign') return 'Assign Asset';
     if (activeAction === 'reassign') return 'ReAssign Asset';
+    if (activeAction === 'laporkan_hilang') return 'Laporkan Aset Hilang';
     return 'Update Asset';
   }, [activeAction]);
 
@@ -108,6 +111,7 @@ const AssignAsset = memo(() => {
       reassignReason: '',
     });
     setPhotos([]);
+    setBeritaAcara(null);
     setErrors({});
   }, []);
 
@@ -141,20 +145,11 @@ const AssignAsset = memo(() => {
     if (!activeAsset) return;
 
     if (actionId === 'laporkan_hilang') {
-      setIsSubmitting(true);
-      // Status jadi Hilang, dueUpdate di-null; latitude/longitude tetap pakai last known (tidak diubah)
-      api.assets
-        .update(activeAsset.id, { status: 'Hilang', dueUpdate: null })
-        .then(() => {
-          invalidateData('assets');
-          refetchAssets();
-          setSelectedAssetId('');
-          setActiveAsset(null);
-          setIsActionMenuOpen(false);
-          toast.success('Status aset telah diubah menjadi Hilang.');
-        })
-        .catch((err) => toast.error(err?.message || 'Gagal melaporkan kehilangan.'))
-        .finally(() => setIsSubmitting(false));
+      setActiveAction('laporkan_hilang');
+      setBeritaAcara(null);
+      setErrors({});
+      setIsActionMenuOpen(false);
+      setIsFormModalOpen(true);
       return;
     }
 
@@ -229,8 +224,18 @@ const AssignAsset = memo(() => {
     if (!formData.latitude || !formData.longitude) {
       newErrors.location = 'Location is required';
     }
-    if (photos.length < 1 || photos.length > 4) {
+    if (activeAction === 'assign' && (photos.length < 1 || photos.length > 4)) {
       newErrors.photos = 'Upload 1 sampai 4 foto untuk verifikasi';
+    }
+    if ((activeAction === 'update' || activeAction === 'updateRusak') && photos.length > 4) {
+      newErrors.photos = 'Maksimal 4 foto';
+    }
+    if ((activeAction === 'assign' || activeAction === 'update' || activeAction === 'updateRusak' || activeAction === 'laporkan_hilang') && !beritaAcara) {
+      newErrors.beritaAcara = 'Berita Acara (PDF) wajib diunggah';
+    }
+    if (activeAction === 'laporkan_hilang') {
+      setErrors(newErrors);
+      return Object.keys(newErrors).length === 0;
     }
     if (!isUpdateAction) {
       if (!formData.holderFullName) {
@@ -256,13 +261,37 @@ const AssignAsset = memo(() => {
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  }, [selectedAssetId, formData, photos, isUpdateAction, activeAction]);
+  }, [selectedAssetId, formData, photos, beritaAcara, isUpdateAction, activeAction]);
 
   const handleSubmit = useCallback((e) => {
     e.preventDefault();
 
     if (!validate()) return;
     setIsSubmitting(true);
+
+    if (activeAction === 'laporkan_hilang') {
+      const fd = new FormData();
+      fd.append('status', 'Hilang');
+      fd.append('dueUpdate', '');
+      if (beritaAcara) fd.append('beritaAcara', beritaAcara);
+      api.assets
+        .update(selectedAsset.id, fd)
+        .then(() => {
+          setSelectedAssetId('');
+          setActiveAsset(null);
+          setIsFormModalOpen(false);
+          resetFormState();
+          setIsSubmitting(false);
+          toast.success('Status aset telah diubah menjadi Hilang.');
+          invalidateData('assets');
+          refetchAssets();
+        })
+        .catch((err) => {
+          setIsSubmitting(false);
+          toast.error(err?.message || 'Gagal melaporkan kehilangan.');
+        });
+      return;
+    }
 
     // Due Update mengikuti rule Admin Pusat (Reminder Settings: defaultUpdateIntervalDays)
     const intervalDays = globalUpdateIntervalDays || 7;
@@ -331,22 +360,17 @@ const AssignAsset = memo(() => {
         latitude: lat,
         longitude: lng,
       };
-      const bodyOrFormData =
-        photos.length > 0 && photos.every((p) => p.file)
-          ? (() => {
-              const fd = new FormData();
-              Object.entries(assignPayload).forEach(([k, v]) => {
-                if (v != null && v !== '') {
-                  const val = v instanceof Date ? v.toISOString() : (typeof v === 'object' ? JSON.stringify(v) : String(v));
-                  fd.append(k, val);
-                }
-              });
-              photos.forEach((p) => p.file && fd.append('photos', p.file));
-              return fd;
-            })()
-          : assignPayload;
+      const fd = new FormData();
+      Object.entries(assignPayload).forEach(([k, v]) => {
+        if (v != null && v !== '') {
+          const val = v instanceof Date ? v.toISOString() : (typeof v === 'object' ? JSON.stringify(v) : String(v));
+          fd.append(k, val);
+        }
+      });
+      photos.forEach((p) => p.file && fd.append('photos', p.file));
+      if (beritaAcara) fd.append('beritaAcara', beritaAcara);
       api.assets
-        .assign(selectedAsset.id, bodyOrFormData)
+        .assign(selectedAsset.id, fd)
         .then(() => {
           setSelectedAssetId('');
           setActiveAsset(null);
@@ -372,22 +396,17 @@ const AssignAsset = memo(() => {
         latitude: lat,
         longitude: lng,
       };
-      const bodyOrFormData =
-        photos.length > 0 && photos.every((p) => p.file)
-          ? (() => {
-              const fd = new FormData();
-              Object.entries(payload).forEach(([k, v]) => {
-                if (v != null && v !== '') {
-                  const val = v instanceof Date ? v.toISOString() : (typeof v === 'object' ? JSON.stringify(v) : String(v));
-                  fd.append(k, val);
-                }
-              });
-              photos.forEach((p) => p.file && fd.append('photos', p.file));
-              return fd;
-            })()
-          : payload;
+      const fd = new FormData();
+      Object.entries(payload).forEach(([k, v]) => {
+        if (v != null && v !== '') {
+          const val = v instanceof Date ? v.toISOString() : (typeof v === 'object' ? JSON.stringify(v) : String(v));
+          fd.append(k, val);
+        }
+      });
+      photos.forEach((p) => p.file && fd.append('photos', p.file));
+      if (beritaAcara) fd.append('beritaAcara', beritaAcara);
       api.assets
-        .update(selectedAsset.id, bodyOrFormData)
+        .update(selectedAsset.id, fd)
         .then(() => {
           setSelectedAssetId('');
           setActiveAsset(null);
@@ -407,7 +426,7 @@ const AssignAsset = memo(() => {
           toast.error(err?.message || 'Gagal update aset.');
         });
     }
-  }, [selectedAsset, formData, photos, validate, activeAction, resetFormState, refetchAssets, globalUpdateIntervalDays, toast, user.branch_id]);
+  }, [selectedAsset, formData, photos, beritaAcara, validate, activeAction, resetFormState, refetchAssets, globalUpdateIntervalDays, toast, user.branch_id]);
 
   const handleClearHolder = useCallback(() => {
     setFormData(prev => ({
@@ -544,6 +563,19 @@ const AssignAsset = memo(() => {
               </div>
             </div>
 
+            {activeAction === 'laporkan_hilang' ? (
+              <>
+                <p className="text-sm text-neutral-600">Unggah Berita Acara (PDF) untuk melaporkan aset ini hilang.</p>
+                <PdfUpload file={beritaAcara} onChange={setBeritaAcara} error={errors.beritaAcara} required />
+                <div className="flex justify-end gap-2 pt-4 border-t border-gray-100">
+                  <Button type="button" variant="secondary" onClick={handleCloseFormModal} disabled={isSubmitting}>Batal</Button>
+                  <Button type="submit" variant="primary" disabled={isSubmitting}>
+                    {isSubmitting ? 'Memproses...' : 'Laporkan Hilang'}
+                  </Button>
+                </div>
+              </>
+            ) : (
+            <>
             {/* Holder Information (read-only, only for Update) - same style as Selected Asset */}
             {isUpdateAction && selectedAsset?.holder && (
               <div className="p-4 bg-neutral-50 border border-neutral-200 rounded-lg">
@@ -598,9 +630,17 @@ const AssignAsset = memo(() => {
                 onChange={setPhotos}
                 maxPhotos={4}
                 label="Foto Kondisi Aset"
-                helperText="Upload 1–4 foto untuk verifikasi (min. 1, max. 4)"
+                helperText={activeAction === 'assign' ? 'Upload 1–4 foto untuk verifikasi (min. 1, max. 4)' : 'Upload 0–4 foto (opsional untuk update)'}
                 error={errors.photos}
               />
+              {(activeAction === 'assign' || activeAction === 'update' || activeAction === 'updateRusak') && (
+                <PdfUpload
+                  file={beritaAcara}
+                  onChange={setBeritaAcara}
+                  error={errors.beritaAcara}
+                  required
+                />
+              )}
             </div>
 
             {/* Location Picker */}
@@ -800,6 +840,8 @@ const AssignAsset = memo(() => {
                 </Button>
               )}
             </div>
+            </>
+            )}
           </form>
           </Card>
         </div>
