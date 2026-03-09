@@ -114,7 +114,6 @@ export async function getAssets(filters, userRole, userBranchId) {
 
   const result = assets.map(mapAsset);
   cache.set(cacheKey, result);
-  console.log('[getAssets] returning', result.length, 'assets');
   return result;
 }
 
@@ -303,8 +302,9 @@ export async function deleteAsset(id, userRole, userBranchId) {
     await deleteManyFromSupabase(pathsToDelete);
   }
 
-  await prisma.asset.delete({
+  await prisma.asset.update({
     where: { id },
+    data: { deletedAt: new Date() },
   });
   invalidateAssets();
   invalidateBranches();
@@ -366,7 +366,6 @@ export async function assignAsset(assetId, payload, userId, userRole, userBranch
     dueUpdate: dueUpdate?.toISOString?.() ?? null,
   }, userId);
   invalidateAssets();
-  console.log('[assignAsset] assetId=', assetId, 'updateImages count=', updateImages.length);
   return getAssetById(assetId, userRole, userBranchId);
 }
 

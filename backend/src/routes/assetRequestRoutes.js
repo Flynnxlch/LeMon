@@ -58,7 +58,13 @@ router.patch(
       detail: body.detail,
       contractEndDate: body.contractEndDate,
     });
-    req.body = result.success ? result.data : {};
+    if (!result.success) {
+      const issues = result.error?.issues ?? [];
+      const first = issues[0];
+      const message = first ? `${(first.path ?? []).join('.')}: ${first.message}` : 'Validation failed';
+      return res.status(400).json({ success: false, error: message });
+    }
+    req.body = result.data;
     req.files = req.files || {};
     next();
   },

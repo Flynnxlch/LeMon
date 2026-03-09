@@ -27,7 +27,10 @@ export async function getAssetRequests(status) {
   const where = status ? { status } : {};
   const list = await prisma.assetRequest.findMany({
     where,
-    include: { branch: true, requestedBy: true },
+    include: {
+      branch: { select: { name: true } },
+      requestedBy: { select: { name: true } },
+    },
     orderBy: { requestDate: 'desc' },
   });
   const result = list.map(mapAssetRequest);
@@ -48,7 +51,10 @@ export async function createAssetRequest(data, requestedById, photoUrl) {
       photoUrl: photoUrl || null,
       status: 'Pending',
     },
-    include: { branch: true, requestedBy: true },
+    include: {
+      branch: { select: { name: true } },
+      requestedBy: { select: { name: true } },
+    },
   });
   invalidateAssetRequests();
   return mapAssetRequest(ar);

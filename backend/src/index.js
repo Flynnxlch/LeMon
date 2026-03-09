@@ -15,9 +15,9 @@ async function start() {
     console.log(`Server running on port ${config.port} (${config.nodeEnv})`);
     console.log(`API prefix: ${config.apiPrefix}`);
   });
-  process.on('SIGTERM', () => {
-    server.close(() => process.exit(0));
-  });
+  const shutdown = () => server.close(() => process.exit(0));
+  process.on('SIGTERM', shutdown);
+  process.on('SIGINT', shutdown);
 }
 
 start();

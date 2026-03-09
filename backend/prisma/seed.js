@@ -4,10 +4,14 @@ import bcrypt from 'bcrypt';
 const prisma = new PrismaClient();
 
 // FIX [F001][F002]: Use env for initial admin; never log password. Prefer SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD in production.
-const DEFAULT_ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL || ''; //Isi disini
-const DEFAULT_ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD || ''; // Override via env in production; change after first login
+const DEFAULT_ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL || '';
+const DEFAULT_ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD || '';
 
 async function main() {
+  if (!DEFAULT_ADMIN_EMAIL || !DEFAULT_ADMIN_PASSWORD) {
+    console.error('SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD environment variables must be set.');
+    process.exit(1);
+  }
   const existing = await prisma.user.findUnique({
     where: { email: DEFAULT_ADMIN_EMAIL },
   });

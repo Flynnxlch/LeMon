@@ -2,6 +2,8 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import config from './config/index.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import { globalLimiter } from './middleware/rateLimiter.js';
@@ -38,6 +40,17 @@ app.use(`${config.apiPrefix}/transfer-requests`, transferRequestRoutes);
 app.use(`${config.apiPrefix}/reassignment-requests`, reassignmentRequestRoutes);
 app.use(`${config.apiPrefix}/asset-requests`, assetRequestRoutes);
 app.use(`${config.apiPrefix}/settings`, settingRoutes);
+
+// Serve frontend static files in production
+if (config.nodeEnv === 'production') {
+  const __dirname = path.dirname(fileURLToPath(import.meta.url));
+  const distPath = path.resolve(__dirname, '../../dist');
+  app.use(express.static(distPath));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith(config.apiPrefix)) return next();
+    res.sendFile(path.join(distPath, 'index.html'));
+  });
+}
 
 app.use(notFoundHandler);
 app.use(errorHandler);
