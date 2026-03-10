@@ -120,12 +120,12 @@ const Register = memo(() => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-neutral-900 mb-2">Request Sent!</h2>
+          <h2 className="text-2xl font-bold text-neutral-900 mb-2">Request Sent! {/* Title — kept in English */}</h2>
           <p className="text-neutral-500 mb-6">
-            Your Branch Admin account request has been sent. Central Admin will approve and assign your branch before you can sign in.
+            Permintaan akun Admin Cabang Anda telah dikirim. Admin Pusat akan menyetujui dan menugaskan cabang Anda sebelum Anda dapat masuk. {/* Changed to Indonesian */}
           </p>
           <p className="text-sm text-neutral-500">
-            Redirecting to login page...
+            Mengalihkan ke halaman login... {/* Changed to Indonesian */}
           </p>
         </div>
       </div>
@@ -141,10 +141,10 @@ const Register = memo(() => {
             <span className="text-white font-bold text-2xl">T</span>
           </div>
           <h1 className="text-3xl font-bold text-neutral-900 mb-2">
-            Request Admin Cabang Account
+            Request Branch Admin Account {/* Changed to English */}
           </h1>
           <p className="text-neutral-500">
-            Submit your details to request a Branch Admin account. Central Admin will approve and assign your branch.
+            Kirimkan detail Anda untuk meminta akun Admin Cabang. Admin Pusat akan menyetujui dan menugaskan cabang Anda. {/* Changed to Indonesian */}
           </p>
         </div>
         

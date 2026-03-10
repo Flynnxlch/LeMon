@@ -39,13 +39,13 @@ const Sidebar = memo(({ isOpen, onClose }) => {
     
     const adminPusatItems = [
       { path: '/branch-management', label: 'Branch & User Management', icon: HiOfficeBuilding },
-      { path: '/reminder-settings', label: 'Pengaturan Reminder Update', icon: HiClock },
+      { path: '/reminder-settings', label: 'Update Reminder Settings', icon: HiClock }, // Changed to English
       { path: '/transfer-requests', label: 'Transfer Requests', icon: HiSwitchHorizontal },
       { path: '/reassignment-requests', label: 'Reassignment Requests', icon: HiClipboardList },
       { path: '/asset-approval', label: 'Asset Approval', icon: HiBadgeCheck },
-      { path: '/asset-rusak', label: 'Asset Rusak', icon: HiExclamation },
-      { path: '/asset-hilang', label: 'Asset Hilang', icon: HiBan },
-      { path: '/kontrak-habis', label: 'Kontrak Habis', icon: HiCalendar },
+      { path: '/asset-rusak', label: 'Damaged Assets', icon: HiExclamation }, // Changed to English
+      { path: '/asset-hilang', label: 'Missing Assets', icon: HiBan }, // Changed to English
+      { path: '/kontrak-habis', label: 'Expired Contracts', icon: HiCalendar }, // Changed to English
     ];
     
     if (userRole === 'Admin Pusat') {

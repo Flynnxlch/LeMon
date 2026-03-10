@@ -448,7 +448,7 @@ const AssignAsset = memo(() => {
           Assign Asset
         </h1>
         <p className="text-sm text-neutral-500">
-          Assign assets to holders or reassign existing assignments with photo verification and location tracking
+          Assign aset ke holder atau reassign penugasan yang sudah ada dengan verifikasi foto dan pelacakan lokasi. {/* Changed to Indonesian */}
         </p>
       </div>
 
@@ -471,9 +471,10 @@ const AssignAsset = memo(() => {
           />
           <div className="relative w-full max-w-md bg-white rounded-xl shadow-lg border border-gray-200 p-6">
             <h3 className="text-lg font-semibold text-neutral-900 mb-2">
-              Pilih Aksi untuk {activeAsset.serialNumber}
+              Select Action for {activeAsset.serialNumber} {/* Changed to English */}
             </h3>
             <p className="text-sm text-neutral-500 mb-5">
+              {/* CLARIFY: "Status saat ini:" is metadata text before a value — confirm if "Current Status:" (English) is preferred */}
               Status saat ini: <span className="font-semibold text-neutral-900">{activeAsset.status}</span>
             </p>
             <div className="space-y-3">
@@ -584,7 +585,7 @@ const AssignAsset = memo(() => {
                 </h3>
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div>
-                    <span className="text-neutral-500">Nama:</span>
+                    <span className="text-neutral-500">Name: {/* Changed to English */}</span>
                     <span className="ml-2 font-medium text-neutral-900">
                       {selectedAsset.holder.fullName || '-'}
                     </span>
@@ -596,13 +597,13 @@ const AssignAsset = memo(() => {
                     </span>
                   </div>
                   <div>
-                    <span className="text-neutral-500">Cabang:</span>
+                    <span className="text-neutral-500">Branch: {/* Changed to English */}</span>
                     <span className="ml-2 font-medium text-neutral-900">
                       {selectedAsset.holder.branchName || selectedAsset.holder.branchCode || '-'}
                     </span>
                   </div>
                   <div>
-                    <span className="text-neutral-500">Divisi:</span>
+                    <span className="text-neutral-500">Division: {/* Changed to English */}</span>
                     <span className="ml-2 font-medium text-neutral-900">
                       {selectedAsset.holder.division || '-'}
                     </span>
@@ -614,7 +615,7 @@ const AssignAsset = memo(() => {
                     </span>
                   </div>
                   <div>
-                    <span className="text-neutral-500">Telepon:</span>
+                    <span className="text-neutral-500">Phone: {/* Changed to English */}</span>
                     <span className="ml-2 font-medium text-neutral-900">
                       {selectedAsset.holder.phone || '-'}
                     </span>
@@ -629,7 +630,7 @@ const AssignAsset = memo(() => {
                 photos={photos}
                 onChange={setPhotos}
                 maxPhotos={4}
-                label="Foto Kondisi Aset"
+                label="Asset Condition Photo" // Changed to English
                 helperText={activeAction === 'assign' ? 'Upload 1–4 foto untuk verifikasi (min. 1, max. 4)' : 'Upload 0–4 foto (opsional untuk update)'}
                 error={errors.photos}
               />
@@ -661,7 +662,7 @@ const AssignAsset = memo(() => {
             {activeAction === 'reassign' && (
               <div className="border-t border-gray-100 pt-6">
                 <label className="block text-sm font-medium text-neutral-700 mb-1.5">
-                  Alasan Reassign <span className="text-red-500">*</span>
+                  Reassign Reason <span className="text-red-500">*</span> {/* Changed to English */}
                 </label>
                 <textarea
                   name="reassignReason"
@@ -699,7 +700,7 @@ const AssignAsset = memo(() => {
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <Input
-                      label="Nama Lengkap"
+                      label="Full Name" // Changed to English
                       name="holderFullName"
                       value={formData.holderFullName}
                       onChange={handleChange}
@@ -720,13 +721,13 @@ const AssignAsset = memo(() => {
                   {/* Cabang otomatis dari Admin Cabang yang login */}
                   {user?.branch_name && (
                     <div className="mb-2 p-3 bg-neutral-50 border border-neutral-200 rounded-lg">
-                      <p className="text-xs text-neutral-500 uppercase tracking-wider">Cabang (otomatis)</p>
+                      <p className="text-xs text-neutral-500 uppercase tracking-wider">Branch (automatic) {/* Changed to English */}</p>
                       <p className="text-sm font-medium text-neutral-900 mt-0.5">{user.branch_name}</p>
                     </div>
                   )}
                   <div className="grid grid-cols-2 gap-4">
                     <Input
-                      label="Divisi/Unit Kerja"
+                      label="Division/Work Unit" // Changed to English
                       name="holderDivision"
                       value={formData.holderDivision}
                       onChange={handleChange}
@@ -747,7 +748,7 @@ const AssignAsset = memo(() => {
                       placeholder="ahmad.santoso@company.com"
                     />
                     <Input
-                      label="Nomor Telepon"
+                      label="Phone Number" // Changed to English
                       name="holderPhone"
                       value={formData.holderPhone}
                       onChange={handleChange}

@@ -128,7 +128,7 @@ const ProgressTrack = memo(() => {
         </p>
       </div>
 
-      <Card title="Daftar Perubahan Asset" subtitle="Klik baris untuk membuka detail aset">
+      <Card title="Asset Change Log" subtitle="Klik baris untuk membuka detail aset"> {/* Changed title to English */}
         <div className="mb-6 flex flex-col sm:flex-row gap-4">
           <div className="flex-1 relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -182,16 +182,16 @@ const ProgressTrack = memo(() => {
                   Serial Number
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                  Dilakukan Oleh
+                  Performed By {/* Changed to English */}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                  Keterangan
+                  Description {/* Changed to English */}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
                   Status
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                  Waktu
+                  Time {/* Changed to English */}
                 </th>
               </tr>
             </thead>

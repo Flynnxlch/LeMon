@@ -128,7 +128,7 @@ const TransferRequests = memo(() => {
           Asset Transfer Requests
         </h1>
         <p className="text-sm text-neutral-500">
-          Review and approve asset transfers between branches
+          Tinjau dan setujui transfer aset antar cabang {/* Changed to Indonesian */}
         </p>
       </div>
 
@@ -297,7 +297,7 @@ const TransferRequests = memo(() => {
               className="p-6"
             >
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-neutral-900">Detail Permintaan Transfer</h2>
+                <h2 className="text-xl font-semibold text-neutral-900">Transfer Request Detail {/* Changed to English */}</h2>
                 <button
                   type="button"
                   onClick={closeDetail}
@@ -336,7 +336,7 @@ const TransferRequests = memo(() => {
               {/* Section 2: Detail (Asset, Transfer route nama cabang saja, Notes) */}
               <div className="space-y-4">
                 <div className="p-4 bg-neutral-50 rounded-lg border border-neutral-200">
-                  <h3 className="text-sm font-semibold text-neutral-900 mb-3">Aset</h3>
+                  <h3 className="text-sm font-semibold text-neutral-900 mb-3">Asset {/* Changed to English */}</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                     <div>
                       <span className="text-neutral-500">Serial Number</span>
@@ -349,7 +349,7 @@ const TransferRequests = memo(() => {
                   </div>
                 </div>
                 <div className="p-4 bg-neutral-50 rounded-lg border border-neutral-200">
-                  <h3 className="text-sm font-semibold text-neutral-900 mb-2">Rute Transfer</h3>
+                  <h3 className="text-sm font-semibold text-neutral-900 mb-2">Transfer Route {/* Changed to English */}</h3>
                   <div className="flex items-center gap-2 text-sm">
                     <span className="font-medium text-neutral-900">{selectedRequest.fromBranchName ?? '—'}</span>
                     <HiArrowRight className="w-5 h-5 text-neutral-500 shrink-0" />
@@ -357,7 +357,7 @@ const TransferRequests = memo(() => {
                   </div>
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold text-neutral-900 mb-2">Alasan / Catatan</h3>
+                  <h3 className="text-sm font-semibold text-neutral-900 mb-2">Reason / Notes {/* Changed to English */}</h3>
                   <p className="text-sm text-neutral-700 bg-neutral-50 p-3 rounded-lg border border-neutral-200 whitespace-pre-wrap">
                     {selectedRequest.notes ?? '—'}
                   </p>

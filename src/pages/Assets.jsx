@@ -240,9 +240,10 @@ const Assets = memo(() => {
             Asset Management
           </h1>
           <p className="text-sm text-neutral-500">
+            {/* Changed to Indonesian */}
             {isAdminPusat
-              ? 'View and monitor all assets across branches'
-              : 'Manage and track all rental assets'}
+              ? 'Lihat dan pantau semua aset di seluruh cabang'
+              : 'Kelola dan pantau semua aset rental'}
           </p>
         </div>
         {(isAdminCabang || isAdminPusat) && (

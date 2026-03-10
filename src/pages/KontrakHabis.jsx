@@ -31,7 +31,7 @@ const KontrakHabis = memo(() => {
   return (
     <MainLayout>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-neutral-900 tracking-tight mb-2">Kontrak Habis</h1>
+        <h1 className="text-2xl font-bold text-neutral-900 tracking-tight mb-2">Expired Contracts</h1> {/* Changed to English */}
         <p className="text-sm text-neutral-500">
           Aset yang tanggal akhir kontraknya sudah lewat otomatis dipindahkan dari inventory dan muncul di sini.
         </p>
@@ -43,8 +43,8 @@ const KontrakHabis = memo(() => {
             <thead className="bg-neutral-50">
               <tr>
                 <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Asset</th>
-                <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider hidden sm:table-cell">Cabang</th>
-                <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Tanggal Akhir Kontrak</th>
+                <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider hidden sm:table-cell">Branch {/* Changed to English */}</th>
+                <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Contract End Date {/* Changed to English */}</th>
                 <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Status</th>
               </tr>
             </thead>

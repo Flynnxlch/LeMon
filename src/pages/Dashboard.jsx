@@ -96,7 +96,7 @@ const StatCard = memo(({ stat, expanded, onToggle, typeBreakdown = [] }) => {
             className="border-t border-neutral-200 mt-3 pt-3 shrink-0"
           >
             <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">
-              Breakdown per tipe
+              Breakdown by Type {/* Changed to English */}
             </p>
             <div
               className="flex flex-col gap-[2px] max-h-28 overflow-y-auto overflow-x-hidden scroll-smooth"
@@ -200,9 +200,10 @@ const Dashboard = memo(() => {
           {greeting}, {user?.name}!
         </h1>
         <p className="text-neutral-500 text-sm">
+          {/* Changed to Indonesian */}
           {isAdminPusat
-            ? "Here's an overview of all assets across all branches."
-            : `Here's what's happening at ${user?.branch_name || 'your branch'}.`}
+            ? "Berikut ringkasan semua aset di seluruh cabang."
+            : `Berikut perkembangan aset di ${user?.branch_name || 'cabang Anda'}.`}
         </p>
       </div>
 
@@ -228,7 +229,7 @@ const Dashboard = memo(() => {
                 typeBreakdown={typeBreakdown}
               />
               <div className="bg-white rounded-xl border border-neutral-200 p-4 hover:border-neutral-300 transition-all duration-200 flex flex-col min-h-0">
-                <CardHeader label="Perlu Diupdate" icon={HiExclamationCircle} />
+                <CardHeader label="Needs Update" icon={HiExclamationCircle} /> {/* Changed to English */}
                 <div className="border-t border-neutral-200 my-3" />
                 <h3 className="text-2xl font-bold text-neutral-900 tracking-tight">
                   {statusCounts['Perlu Diupdate'].toLocaleString()}
@@ -237,7 +238,7 @@ const Dashboard = memo(() => {
             </div>
             {/* Kanan: Status Aset (chart) */}
             <div className="bg-white rounded-xl border border-neutral-200 p-4 hover:border-neutral-300 transition-all duration-200 flex flex-col min-h-0">
-              <CardHeader label="Status Aset" icon={HiChartPie} />
+              <CardHeader label="Asset Status" icon={HiChartPie} /> {/* Changed to English */}
               <div className="border-t border-neutral-200 my-3" />
               <div className="flex-1 min-h-0 flex items-center">
                 <StatusPieChart
@@ -282,7 +283,7 @@ const Dashboard = memo(() => {
                       </span>
                       <span className="flex-1 font-medium text-neutral-900 truncate">{branch.name}</span>
                       <span className="text-sm font-semibold text-neutral-600 shrink-0">
-                        {branch.assetCount ?? 0} aset
+                        {branch.assetCount ?? 0} aset {/* CLARIFY: "aset" is a unit/count label — confirm if English ("assets") is preferred here */}
                       </span>
                     </div>
                   ))}
@@ -290,7 +291,7 @@ const Dashboard = memo(() => {
               </div>
             ) : (
               <div className="bg-white rounded-xl border border-neutral-200 p-4 flex flex-col min-h-0">
-                <CardHeader label="Status Aset" icon={HiChartPie} />
+                <CardHeader label="Asset Status" icon={HiChartPie} /> {/* Changed to English */}
                 <div className="border-t border-neutral-200 my-3" />
                 <div className="flex-1 min-h-0 flex items-center">
                   <StatusPieChart

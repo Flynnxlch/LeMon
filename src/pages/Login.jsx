@@ -99,7 +99,7 @@ const Login = memo(() => {
             TrackSTU
           </h1>
           <p className="text-neutral-500">
-            Monitor and manage your rental assets
+            Pantau dan kelola aset rental Anda {/* Changed to Indonesian */}
           </p>
         </div>
         

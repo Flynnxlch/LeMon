@@ -246,7 +246,7 @@ const AssetRusak = memo(() => {
   return (
     <MainLayout>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-neutral-900 tracking-tight mb-2">Asset Rusak</h1>
+        <h1 className="text-2xl font-bold text-neutral-900 tracking-tight mb-2">Damaged Assets</h1> {/* Changed to English */}
         <p className="text-sm text-neutral-500">
           Kelola aset dengan status Rusak: tentukan perbaikan di cabang atau transfer sementara, lalu selesaikan perbaikan dan kembalikan ke user.
         </p>
@@ -260,7 +260,7 @@ const AssetRusak = memo(() => {
             tab === TAB_RUSAK ? 'bg-red-50 text-red-700 border-red-200' : 'bg-white text-neutral-600 border-neutral-200 hover:bg-neutral-50'
           }`}
         >
-          Rusak ({assetsRusak.length})
+          Damaged ({assetsRusak.length}) {/* Changed to English */}
         </button>
         <button
           type="button"
@@ -269,7 +269,7 @@ const AssetRusak = memo(() => {
             tab === TAB_DALAM_PERBAIKAN ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-white text-neutral-600 border-neutral-200 hover:bg-neutral-50'
           }`}
         >
-          Dalam Perbaikan ({assetsDalamPerbaikan.length})
+          Under Repair ({assetsDalamPerbaikan.length}) {/* Changed to English */}
         </button>
       </div>
 
@@ -279,11 +279,11 @@ const AssetRusak = memo(() => {
             <thead className="bg-neutral-50">
               <tr>
                 <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Asset</th>
-                <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider hidden sm:table-cell">Cabang</th>
+                <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider hidden sm:table-cell">Branch {/* Changed to English */}</th>
                 <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">
-                  {tab === TAB_DALAM_PERBAIKAN ? 'Jenis Perbaikan' : 'Kondisi (foto)'}
+                  {tab === TAB_DALAM_PERBAIKAN ? 'Repair Type' : 'Condition (Photo)'} {/* Changed to English */}
                 </th>
-                <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Aksi</th>
+                <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Actions {/* Changed to English */}</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-neutral-200">
@@ -374,7 +374,7 @@ const AssetRusak = memo(() => {
       {showPerbaikanModal && selectedAsset && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/40" onClick={closePerbaikan} aria-hidden="true" />
-          <Card title="Form Perbaikan" className="relative w-full max-w-md">
+          <Card title="Repair Form" className="relative w-full max-w-md"> {/* Changed to English */}
             <div className="absolute top-4 right-4">
               <button type="button" onClick={closePerbaikan} disabled={isSubmitting} className="text-neutral-400 hover:text-neutral-900" aria-label="Tutup">
                 <HiX className="w-6 h-6" />
@@ -385,7 +385,7 @@ const AssetRusak = memo(() => {
             </p>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">Perbaikan</label>
+                <label className="block text-sm font-medium text-neutral-700 mb-2">Repair {/* Changed to English */}</label>
                 <div className="space-y-2">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -395,7 +395,7 @@ const AssetRusak = memo(() => {
                       checked={perbaikanForm.repairType === 'at_branch'}
                       onChange={handlePerbaikanChange}
                     />
-                    <span className="text-sm">Diperbaiki di cabang ini</span>
+                    <span className="text-sm">Repaired at this branch {/* Changed to English */}</span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -405,14 +405,14 @@ const AssetRusak = memo(() => {
                       checked={perbaikanForm.repairType === 'transfer'}
                       onChange={handlePerbaikanChange}
                     />
-                    <span className="text-sm">Transfer sementara ke cabang lain untuk diperbaiki</span>
+                    <span className="text-sm">Temporarily transfer to another branch for repair {/* Changed to English */}</span>
                   </label>
                 </div>
               </div>
               {perbaikanForm.repairType === 'transfer' && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">Cabang tujuan</label>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">Target Branch {/* Changed to English */}</label>
                     <select
                       name="toBranchId"
                       value={perbaikanForm.toBranchId}
@@ -427,7 +427,7 @@ const AssetRusak = memo(() => {
                     {errors.toBranchId && <p className="mt-1 text-sm text-red-500">{errors.toBranchId}</p>}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">Catatan (opsional)</label>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">Notes (optional) {/* Changed to English */}</label>
                     <textarea
                       name="notes"
                       value={perbaikanForm.notes}
@@ -460,7 +460,7 @@ const AssetRusak = memo(() => {
       {showSelesaiModal && selectedAsset && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
           <div className="absolute inset-0 bg-black/40" onClick={closeSelesai} aria-hidden="true" />
-          <Card title="Selesai Perbaikan" className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto my-8">
+          <Card title="Complete Repair" className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto my-8"> {/* Changed to English */}
             <div className="absolute top-4 right-4">
               <button type="button" onClick={closeSelesai} disabled={isSubmitting} className="text-neutral-400 hover:text-neutral-900" aria-label="Tutup">
                 <HiX className="w-6 h-6" />
@@ -476,12 +476,12 @@ const AssetRusak = memo(() => {
             )}
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">Foto kondisi aset setelah perbaikan (1–4 foto)</label>
+                <label className="block text-sm font-medium text-neutral-700 mb-2">Asset Condition Photos After Repair (1–4 photos) {/* Changed to English */}</label>
                 <PhotoUpload photos={photos} onChange={setPhotos} maxPhotos={4} label="" helperText="Upload 1–4 foto" error={errors.photos} />
               </div>
               <PdfUpload file={selesaiBeritaAcara} onChange={setSelesaiBeritaAcara} error={errors.beritaAcara} required />
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">Lokasi (opsional)</label>
+                <label className="block text-sm font-medium text-neutral-700 mb-2">Location (optional) {/* Changed to English */}</label>
                 <GeolocationPicker
                   latitude={selesaiForm.latitude}
                   longitude={selesaiForm.longitude}
@@ -490,7 +490,7 @@ const AssetRusak = memo(() => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">Penugasan setelah perbaikan</label>
+                <label className="block text-sm font-medium text-neutral-700 mb-2">Assignment After Repair {/* Changed to English */}</label>
                 <div className="space-y-2">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -500,7 +500,7 @@ const AssetRusak = memo(() => {
                       checked={selesaiForm.returnToPreviousUser === true}
                       onChange={handleSelesaiChange}
                     />
-                    <span className="text-sm">Kembalikan ke user sebelumnya</span>
+                    <span className="text-sm">Return to Previous User {/* Changed to English */}</span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -510,19 +510,19 @@ const AssetRusak = memo(() => {
                       checked={selesaiForm.returnToPreviousUser === false}
                       onChange={handleSelesaiChange}
                     />
-                    <span className="text-sm">Reassign ke user lain</span>
+                    <span className="text-sm">Reassign to Another User {/* Changed to English */}</span>
                   </label>
                 </div>
               </div>
               {!selesaiForm.returnToPreviousUser && (
                 <div className="p-4 bg-neutral-50 rounded-lg border border-neutral-200 space-y-4">
-                  <h4 className="text-sm font-semibold text-neutral-900">Data Holder Baru</h4>
+                  <h4 className="text-sm font-semibold text-neutral-900">New Holder Data {/* Changed to English */}</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Input label="Nama Lengkap" name="holderFullName" value={selesaiForm.holderFullName} onChange={handleSelesaiChange} error={errors.holderFullName} required />
+                    <Input label="Full Name" name="holderFullName" value={selesaiForm.holderFullName} onChange={handleSelesaiChange} error={errors.holderFullName} required /> {/* Changed to English */}
                     <Input label="NIP" name="holderNip" value={selesaiForm.holderNip} onChange={handleSelesaiChange} error={errors.holderNip} required />
-                    <Input label="Divisi" name="holderDivision" value={selesaiForm.holderDivision} onChange={handleSelesaiChange} error={errors.holderDivision} required />
+                    <Input label="Division" name="holderDivision" value={selesaiForm.holderDivision} onChange={handleSelesaiChange} error={errors.holderDivision} required /> {/* Changed to English */}
                     <Input label="Email" name="holderEmail" type="email" value={selesaiForm.holderEmail} onChange={handleSelesaiChange} error={errors.holderEmail} required />
-                    <Input label="Telepon" name="holderPhone" value={selesaiForm.holderPhone} onChange={handleSelesaiChange} error={errors.holderPhone} required />
+                    <Input label="Phone" name="holderPhone" value={selesaiForm.holderPhone} onChange={handleSelesaiChange} error={errors.holderPhone} required /> {/* Changed to English */}
                   </div>
                 </div>
               )}

@@ -183,7 +183,7 @@ const AssetApproval = memo(() => {
                 : 'bg-white text-neutral-600 border-neutral-200 hover:bg-neutral-50'
             }`}
           >
-            {status === 'all' ? `Semua (${statusCounts.all})` : `${status} (${statusCounts[status.toLowerCase()]})`}
+            {status === 'all' ? `All (${statusCounts.all})` : `${status} (${statusCounts[status.toLowerCase()]})`} {/* Changed to English */}
           </button>
         ))}
       </div>
@@ -194,13 +194,13 @@ const AssetApproval = memo(() => {
             <thead className="bg-neutral-50">
               <tr>
                 <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">
-                  Serial / Tipe
+                  Serial / Type {/* Changed to English */}
                 </th>
                 <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider hidden sm:table-cell">
-                  Cabang
+                  Branch {/* Changed to English */}
                 </th>
                 <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider hidden md:table-cell">
-                  Tanggal
+                  Date {/* Changed to English */}
                 </th>
                 <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">
                   Status
@@ -280,7 +280,7 @@ const AssetApproval = memo(() => {
               className="p-6"
             >
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-neutral-900">Detail Pengajuan Aset</h2>
+                <h2 className="text-xl font-semibold text-neutral-900">Asset Request Detail</h2> {/* Changed to English */}
                 <button
                   type="button"
                   onClick={closeDetail}
@@ -326,7 +326,7 @@ const AssetApproval = memo(() => {
                       onChange={handleEditChange}
                     />
                     <Input
-                      label="Tanggal Akhir Kontrak"
+                      label="Contract End Date" // Changed to English
                       name="contractEndDate"
                       type="date"
                       value={editForm.contractEndDate}
@@ -335,7 +335,7 @@ const AssetApproval = memo(() => {
                       helperText="Wajib diisi. Jika sudah lewat, aset akan masuk menu Kontrak Habis."
                     />
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-2">Tipe Aset</label>
+                      <label className="block text-sm font-medium text-neutral-700 mb-2">Asset Type {/* Changed to English */}</label>
                       <select
                         name="type"
                         value={editForm.type}
@@ -398,11 +398,11 @@ const AssetApproval = memo(() => {
                       <p className="text-neutral-900 font-medium">{editForm.serialNumber || '—'}</p>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-neutral-500 mb-1">Tanggal Akhir Kontrak</label>
+                      <label className="block text-sm font-medium text-neutral-500 mb-1">Contract End Date {/* Changed to English */}</label>
                       <p className="text-neutral-900 font-medium">{editForm.contractEndDate || '—'}</p>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-neutral-500 mb-1">Tipe Aset</label>
+                      <label className="block text-sm font-medium text-neutral-500 mb-1">Asset Type {/* Changed to English */}</label>
                       <p className="text-neutral-900 font-medium">{editForm.type || '—'}</p>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -423,7 +423,7 @@ const AssetApproval = memo(() => {
                 )}
                 {selectedRequest.photoUrl && (
                   <div>
-                    <span className="block text-sm font-medium text-neutral-700 mb-2">Foto pengajuan</span>
+                    <span className="block text-sm font-medium text-neutral-700 mb-2">Request Photo {/* Changed to English */}</span>
                     <img
                       src={selectedRequest.photoUrl}
                       alt="Asset"

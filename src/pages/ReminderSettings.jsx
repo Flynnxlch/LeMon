@@ -33,21 +33,21 @@ const ReminderSettings = memo(() => {
     <MainLayout>
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-neutral-900 tracking-tight mb-2">
-          Pengaturan Reminder Update
+          Update Reminder Settings {/* Changed to English */}
         </h1>
         <p className="text-sm text-neutral-500">
           Atur jangka waktu update aset secara global. Nilai ini akan digunakan untuk Assign dan Update aset di semua cabang. Admin cabang tidak perlu mengatur jangka waktu sendiri.
         </p>
       </div>
 
-      <Card title="Jangka Waktu Update (Global)" subtitle="Digunakan saat Assign Asset dan Update Asset di cabang">
+      <Card title="Update Interval (Global)" subtitle="Digunakan saat Assign Asset dan Update Asset di cabang"> {/* Changed title to English */}
         {loading ? (
           <p className="text-neutral-500 py-4">Memuat pengaturan...</p>
         ) : (
           <div className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-neutral-700 mb-2">
-                Jangka waktu update <span className="text-red-500">*</span>
+                Update Interval <span className="text-red-500">*</span> {/* Changed to English */}
               </label>
               <select
                 value={defaultUpdateIntervalDays}

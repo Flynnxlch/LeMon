@@ -253,7 +253,7 @@ const BranchUserManagement = memo(() => {
             Branch & User Management
           </h1>
           <p className="text-sm text-neutral-500 mt-1">
-            Manage branches and users
+            Kelola cabang dan pengguna {/* Changed to Indonesian */}
           </p>
         </div>
 
@@ -728,7 +728,7 @@ const BranchUserManagement = memo(() => {
         {deleteConfirm && (
           <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-lg border border-neutral-200 shadow-lg max-w-sm w-full p-4">
-              <h3 className="text-base font-semibold text-neutral-900 mb-2">Hapus User?</h3>
+              <h3 className="text-base font-semibold text-neutral-900 mb-2">Delete User? {/* Changed to English */}</h3>
               <p className="text-sm text-neutral-500 mb-4">
                 User &quot;{deleteConfirm.name}&quot; akan dihapus. Tindakan ini tidak dapat dibatalkan.
               </p>
@@ -752,7 +752,7 @@ const BranchUserManagement = memo(() => {
         {deleteBranchConfirm && (
           <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-lg border border-neutral-200 shadow-lg max-w-sm w-full p-4">
-              <h3 className="text-base font-semibold text-neutral-900 mb-2">Hapus Cabang?</h3>
+              <h3 className="text-base font-semibold text-neutral-900 mb-2">Delete Branch? {/* Changed to English */}</h3>
               <p className="text-sm text-neutral-500 mb-4">
                 Cabang &quot;{deleteBranchConfirm.name}&quot; akan dihapus. Cabang yang masih memiliki aset tidak dapat dihapus. Tindakan ini tidak dapat dibatalkan.
               </p>
@@ -776,7 +776,7 @@ const BranchUserManagement = memo(() => {
         {passwordApprovalDetailId && (
           <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setPasswordApprovalDetailId(null)}>
             <div className="bg-white rounded-lg border border-neutral-200 shadow-lg max-w-md w-full p-4" onClick={(e) => e.stopPropagation()}>
-              <h3 className="text-base font-semibold text-neutral-900 mb-4">Detail Permintaan Perubahan Password</h3>
+              <h3 className="text-base font-semibold text-neutral-900 mb-4">Password Change Request Detail {/* Changed to English */}</h3>
               {passwordApprovalDetail ? (
                 <div className="space-y-2 text-sm">
                   <p><span className="font-medium text-neutral-700">Name:</span> {passwordApprovalDetail.name}</p>

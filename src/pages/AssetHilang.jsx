@@ -72,7 +72,7 @@ const AssetHilang = memo(() => {
   return (
     <MainLayout>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-neutral-900 tracking-tight mb-2">Asset Hilang</h1>
+        <h1 className="text-2xl font-bold text-neutral-900 tracking-tight mb-2">Missing Assets</h1> {/* Changed to English */}
         <p className="text-sm text-neutral-500">
           Daftar aset dengan status {STATUS_LABELS.Hilang}. Admin Pusat dapat memutuskan untuk melakukan pengadaan lagi (mengembalikan status ke Available) atau tidak.
         </p>
@@ -84,9 +84,9 @@ const AssetHilang = memo(() => {
             <thead className="bg-neutral-50">
               <tr>
                 <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Asset</th>
-                <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider hidden sm:table-cell">Cabang</th>
+                <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider hidden sm:table-cell">Branch {/* Changed to English */}</th>
                 <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Status</th>
-                <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Aksi</th>
+                <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Actions {/* Changed to English */}</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-neutral-200">
@@ -142,7 +142,7 @@ const AssetHilang = memo(() => {
       {showDecisionModal && selectedAsset && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/40" onClick={closeDecision} aria-hidden="true" />
-          <Card title="Keputusan Pengadaan" className="relative w-full max-w-md">
+          <Card title="Procurement Decision" className="relative w-full max-w-md"> {/* Changed to English */}
             <div className="absolute top-4 right-4">
               <button type="button" onClick={closeDecision} disabled={isSubmitting} className="text-neutral-400 hover:text-neutral-900" aria-label="Tutup">
                 <HiX className="w-6 h-6" />
