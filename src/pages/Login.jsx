@@ -92,11 +92,11 @@ const Login = memo(() => {
       <div className="w-full max-w-md">
         {/* Logo and Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-neutral-900 rounded-xl mb-4">
-            <span className="text-white font-bold text-2xl">T</span>
+          <div className="inline-flex items-center justify-center w-16 h-16 mb-4">
+            <img src="/lemon-18.svg" alt="Lease Monitor logo" className="w-16 h-16" />
           </div>
           <h1 className="text-3xl font-bold text-neutral-900 mb-2">
-            TrackSTU
+            Lease Monitor
           </h1>
           <p className="text-neutral-500">
             Pantau dan kelola aset rental Anda {/* Changed to Indonesian */}

@@ -105,8 +105,8 @@ const ForgotPassword = memo(() => {
       <div className="min-h-screen flex items-center justify-center bg-[#F9FAFB] px-4">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-neutral-900 rounded-xl mb-4">
-              <span className="text-white font-bold text-2xl">T</span>
+            <div className="inline-flex items-center justify-center w-16 h-16 mb-4">
+              <img src="/lemon-18.svg" alt="Lease Monitor logo" className="w-16 h-16" />
             </div>
             <h1 className="text-3xl font-bold text-neutral-900 mb-2">
               Set New Password

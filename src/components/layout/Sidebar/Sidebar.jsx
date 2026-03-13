@@ -92,10 +92,10 @@ const Sidebar = memo(({ isOpen, onClose }) => {
           {!isCollapsed ? (
             <>
               <div className="flex items-center space-x-2.5 overflow-hidden flex-1 min-w-0">
-                <div className="w-8 h-8 bg-neutral-900 rounded-lg flex items-center justify-center shrink-0">
-                  <HiCube className="w-5 h-5 text-white" />
+                <div className="w-8 h-8 flex items-center justify-center shrink-0">
+                  <img src="/lemon-18.svg" alt="LeMon logo" className="w-8 h-8" />
                 </div>
-                <span className="font-semibold text-base text-neutral-900 whitespace-nowrap tracking-tight">Keria</span>
+                <span className="font-semibold text-base text-neutral-900 whitespace-nowrap tracking-tight">LeMon</span>
               </div>
               
               {/* Close button for mobile */}
