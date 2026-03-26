@@ -198,12 +198,6 @@ const AssetMap = memo(({ assets = [], selectedAsset, onClearSelection, branchNam
     });
   }, []);
 
-  const getNextUpdateDate = useCallback((lastUpdate) => {
-    const date = new Date(lastUpdate);
-    date.setDate(date.getDate() + 30); // 30 days from last update
-    return formatDate(date.toISOString());
-  }, [formatDate]);
-
   // Default center (Jakarta)
   const defaultCenter = useMemo(() => [-6.2088, 106.8456], []);
 
@@ -318,13 +312,13 @@ const AssetMap = memo(({ assets = [], selectedAsset, onClearSelection, branchNam
                   {/* Middle Section: Details */}
                   <div className="space-y-2 mb-3 text-sm">
                     <div className="flex items-center gap-2">
-                      <span className="text-neutral-500 font-medium min-w-[80px]">Holder:</span>
+                      <span className="text-neutral-500 font-medium min-w-[80px]">Pemegang:</span>
                       <span className="text-neutral-900 font-semibold">
                         {asset.holder?.fullName || 'Not assigned'}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-neutral-500 font-medium min-w-[80px]">Coordinates:</span>
+                      <span className="text-neutral-500 font-medium min-w-[80px]">Lokasi:</span>
                       <span className="text-neutral-900 font-medium text-xs">
                         {asset.latitude.toFixed(5)}, {asset.longitude.toFixed(5)}
                       </span>
@@ -348,7 +342,7 @@ const AssetMap = memo(({ assets = [], selectedAsset, onClearSelection, branchNam
                   {/* Bottom Section: Last Update */}
                   <div className="pt-3 border-t border-gray-100">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-neutral-500 font-medium">Last Update:</span>
+                      <span className="text-xs text-neutral-500 font-medium">Terakhir Update:</span>
                       <span className="text-xs text-neutral-900 font-medium">
                         {formatDate(asset.lastUpdate)}
                       </span>
@@ -367,7 +361,7 @@ const AssetMap = memo(({ assets = [], selectedAsset, onClearSelection, branchNam
       {selectedAssetWithAddress && (
         <div className="mt-4 border-t border-gray-100 pt-4">
           <h3 className="text-base font-semibold text-neutral-900 mb-2">
-            Asset Details
+            Detail
           </h3>
           <div className="bg-neutral-50 rounded-lg p-4 border border-gray-200">
             {/* Asset Image and Basic Info */}
@@ -405,7 +399,7 @@ const AssetMap = memo(({ assets = [], selectedAsset, onClearSelection, branchNam
               <div className="space-y-3">
                 <div>
                   <span className="text-sm font-medium text-neutral-500 block mb-1">
-                    Type
+                    Tipe Asset
                   </span>
                   <span className="text-base font-semibold text-neutral-900">
                     {selectedAssetWithAddress.type}
@@ -413,7 +407,7 @@ const AssetMap = memo(({ assets = [], selectedAsset, onClearSelection, branchNam
                 </div>
                 <div>
                   <span className="text-sm font-medium text-neutral-500 block mb-1">
-                    Current Holder
+                    Pemegang
                   </span>
                   <span className="text-base font-semibold text-neutral-900">
                     {selectedAssetWithAddress.holder?.fullName || 'Not assigned'}
@@ -421,7 +415,7 @@ const AssetMap = memo(({ assets = [], selectedAsset, onClearSelection, branchNam
                 </div>
                 <div>
                   <span className="text-sm font-medium text-neutral-500 block mb-1">
-                    Location Address
+                    Alamat
                   </span>
                   <span className="text-base font-semibold text-neutral-900">
                     {isLoadingAddress ? (
@@ -436,7 +430,7 @@ const AssetMap = memo(({ assets = [], selectedAsset, onClearSelection, branchNam
               <div className="space-y-3">
                 <div>
                   <span className="text-sm font-medium text-neutral-500 block mb-1">
-                    Coordinates
+                    Coordinate
                   </span>
                   <span className="text-base font-semibold text-neutral-900">
                     {selectedAssetWithAddress.latitude.toFixed(6)}, {selectedAssetWithAddress.longitude.toFixed(6)}
@@ -444,7 +438,7 @@ const AssetMap = memo(({ assets = [], selectedAsset, onClearSelection, branchNam
                 </div>
                 <div>
                   <span className="text-sm font-medium text-neutral-500 block mb-1">
-                    Last Updated
+                    Last Update
                   </span>
                   <span className="text-base font-semibold text-neutral-900">
                     {formatDate(selectedAssetWithAddress.lastUpdate)}
@@ -452,10 +446,10 @@ const AssetMap = memo(({ assets = [], selectedAsset, onClearSelection, branchNam
                 </div>
                 <div>
                   <span className="text-sm font-medium text-neutral-500 block mb-1">
-                    Due Update
+                    Butuh Update
                   </span>
                   <span className="text-base font-semibold text-amber-700">
-                    {getNextUpdateDate(selectedAssetWithAddress.lastUpdate)}
+                    {selectedAssetWithAddress.dueUpdate ? formatDate(selectedAssetWithAddress.dueUpdate) : '—'}
                   </span>
                 </div>
               </div>
