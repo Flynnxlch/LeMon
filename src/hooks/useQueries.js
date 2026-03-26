@@ -23,7 +23,21 @@ export const queryKeys = {
 export function useAssets(params, options = {}) {
   return useQuery({
     queryKey: queryKeys.assets(params),
-    queryFn: () => api.assets.list(params).then(getListData),
+    queryFn: () =>
+      api.assets.list(params).then((res) => ({
+        data: res?.data ?? [],
+        total: res?.total ?? 0,
+        page: res?.page ?? 1,
+        limit: res?.limit ?? 50,
+      })),
+    ...options,
+  });
+}
+
+export function useAssetStats(params, options = {}) {
+  return useQuery({
+    queryKey: ['assets', 'stats', params ?? {}],
+    queryFn: () => api.assets.stats(params).then((res) => res?.data ?? null),
     ...options,
   });
 }

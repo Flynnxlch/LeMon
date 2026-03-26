@@ -320,13 +320,13 @@ const AssetApproval = memo(() => {
                 {selectedRequest.status === 'Pending' ? (
                   <>
                     <Input
-                      label="Serial Number"
+                      label="Nomor Seri"
                       name="serialNumber"
                       value={editForm.serialNumber}
                       onChange={handleEditChange}
                     />
                     <Input
-                      label="Contract End Date" // Changed to English
+                      label="Tanggal Akhir Kontrak"
                       name="contractEndDate"
                       type="date"
                       value={editForm.contractEndDate}
@@ -335,7 +335,7 @@ const AssetApproval = memo(() => {
                       helperText="Wajib diisi. Jika sudah lewat, aset akan masuk menu Kontrak Habis."
                     />
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-2">Asset Type {/* Changed to English */}</label>
+                      <label className="block text-sm font-medium text-neutral-700 mb-2">Tipe Aset</label>
                       <select
                         name="type"
                         value={editForm.type}
@@ -394,15 +394,15 @@ const AssetApproval = memo(() => {
                 ) : (
                   <>
                     <div>
-                      <label className="block text-sm font-medium text-neutral-500 mb-1">Serial Number</label>
+                      <label className="block text-sm font-medium text-neutral-500 mb-1">Nomor Seri</label>
                       <p className="text-neutral-900 font-medium">{editForm.serialNumber || '—'}</p>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-neutral-500 mb-1">Contract End Date {/* Changed to English */}</label>
+                      <label className="block text-sm font-medium text-neutral-500 mb-1">Tanggal Akhir Kontrak</label>
                       <p className="text-neutral-900 font-medium">{editForm.contractEndDate || '—'}</p>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-neutral-500 mb-1">Asset Type {/* Changed to English */}</label>
+                      <label className="block text-sm font-medium text-neutral-500 mb-1">Tipe Aset</label>
                       <p className="text-neutral-900 font-medium">{editForm.type || '—'}</p>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -423,7 +423,7 @@ const AssetApproval = memo(() => {
                 )}
                 {selectedRequest.photoUrl && (
                   <div>
-                    <span className="block text-sm font-medium text-neutral-700 mb-2">Request Photo {/* Changed to English */}</span>
+                    <span className="block text-sm font-medium text-neutral-700 mb-2">Foto Pengajuan</span>
                     <img
                       src={selectedRequest.photoUrl}
                       alt="Asset"

@@ -196,7 +196,7 @@ const AssetEditModal = memo(({ isOpen, onClose, onSubmit, asset }) => {
               {/* Status */}
               <div>
                 <label htmlFor="status" className="block text-sm font-medium text-neutral-700 mb-1.5">
-                  Status <span className="text-red-500">*</span>
+                  Status Aset <span className="text-red-500">*</span>
                 </label>
                 <select
                   id="status"
@@ -223,7 +223,7 @@ const AssetEditModal = memo(({ isOpen, onClose, onSubmit, asset }) => {
                     photos={photos}
                     onChange={setPhotos}
                     maxPhotos={4}
-                    label="Foto Kondisi Aset (1–4)"
+                    label="Foto Kondisi Aset (1\u20134)"
                     helperText="Upload 1–4 foto untuk verifikasi"
                     error={errors.photos}
                   />
@@ -238,7 +238,7 @@ const AssetEditModal = memo(({ isOpen, onClose, onSubmit, asset }) => {
                     longitude={formData.longitude}
                     onChange={handleLocationChange}
                     error={errors.latitude || errors.longitude}
-                    label="Asset Location"
+                    label="Lokasi Aset"
                     showAddress={true}
                     disabled={formData.status === 'Available'}
                   />
@@ -250,7 +250,7 @@ const AssetEditModal = memo(({ isOpen, onClose, onSubmit, asset }) => {
                 <div className="border-t border-gray-100 pt-6">
                   <div className="flex items-center justify-between mb-4">
                     <h4 className="text-md font-semibold text-neutral-900">
-                      Holder Information
+                      Informasi Pemegang Aset
                     </h4>
                     {formData.holderFullName && (
                       <button
@@ -294,7 +294,7 @@ const AssetEditModal = memo(({ isOpen, onClose, onSubmit, asset }) => {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label htmlFor="holderBranchCode" className="block text-sm font-medium text-neutral-700 mb-1.5">
-                          Three Letter Code Cabang <span className="text-red-500">*</span>
+                          Kode Cabang (3 Huruf) <span className="text-red-500">*</span>
                         </label>
                         <Input
                           id="holderBranchCode"
@@ -322,7 +322,7 @@ const AssetEditModal = memo(({ isOpen, onClose, onSubmit, asset }) => {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label htmlFor="holderEmail" className="block text-sm font-medium text-neutral-700 mb-1.5">
-                          Email <span className="text-red-500">*</span>
+                          Alamat Email <span className="text-red-500">*</span>
                         </label>
                         <Input
                           id="holderEmail"

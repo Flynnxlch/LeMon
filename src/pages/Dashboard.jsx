@@ -12,7 +12,7 @@ import AssetTable from '../components/features/AssetTable/AssetTable';
 import StatusPieChart from '../components/features/StatusPieChart/StatusPieChart';
 import MainLayout from '../components/layout/MainLayout/MainLayout';
 import { useAuth } from '../context/AuthContext';
-import { useAssets, useBranches } from '../hooks/useQueries';
+import { useAssets, useAssetStats, useBranches } from '../hooks/useQueries';
 
 function applyDueUpdateStatus(assets) {
   const now = new Date();
@@ -96,7 +96,7 @@ const StatCard = memo(({ stat, expanded, onToggle, typeBreakdown = [] }) => {
             className="border-t border-neutral-200 mt-3 pt-3 shrink-0"
           >
             <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">
-              Breakdown by Type {/* Changed to English */}
+              Rincian per Tipe
             </p>
             <div
               className="flex flex-col gap-[2px] max-h-28 overflow-y-auto overflow-x-hidden scroll-smooth"
@@ -141,29 +141,32 @@ const Dashboard = memo(() => {
     return p;
   }, [user, isAdminPusat, branchFilter]);
 
-  const { data: rawAssets = [], isLoading: assetsLoading } = useAssets(assetParams, {
+  // Lightweight stats (status counts, type breakdown, total) — no asset objects loaded
+  const { data: stats, isLoading: statsLoading } = useAssetStats(assetParams, {
     enabled: !!user,
     refetchInterval: isAdminPusat ? 30_000 : false,
+  });
+
+  // Table/map: first 100 assets for overview (paginated cap)
+  const tableParams = useMemo(() => ({ ...assetParams, limit: 100 }), [assetParams]);
+  const { data: assetsResult = { data: [], total: 0 }, isLoading: assetsLoading } = useAssets(tableParams, {
+    enabled: !!user,
   });
 
   const { data: branches = [], isLoading: branchesLoading } = useBranches({
     enabled: !!user,
   });
 
-  const loading = assetsLoading || branchesLoading;
+  const loading = statsLoading || assetsLoading || branchesLoading;
 
-  const allAssets = useMemo(() => applyDueUpdateStatus(rawAssets), [rawAssets]);
+  // branchFilter is passed server-side via assetParams — no client-side re-filter needed
+  const filteredAssets = useMemo(() => applyDueUpdateStatus(assetsResult.data), [assetsResult.data]);
 
-  const filteredAssets = useMemo(() => {
-    if (!isAdminPusat || !branchFilter) return allAssets;
-    return allAssets.filter((a) => a.branch_id === branchFilter);
-  }, [allAssets, isAdminPusat, branchFilter]);
+  const statusCounts = useMemo(() => stats?.statusCounts ?? getStatusCounts([]), [stats]);
+  const typeBreakdown = useMemo(() => stats?.typeBreakdown ?? [], [stats]);
 
-  const statusCounts = useMemo(() => getStatusCounts(filteredAssets), [filteredAssets]);
-  const typeBreakdown = useMemo(() => getTypeBreakdown(filteredAssets), [filteredAssets]);
-
-  const totalLabel = isAdminPusat ? 'Total Assets' : 'Branch Assets';
-  const totalValue = filteredAssets.length;
+  const totalLabel = isAdminPusat ? 'Total Aset' : 'Aset Cabang';
+  const totalValue = stats?.total ?? 0;
 
   const top5Branches = useMemo(
     () => [...branches].sort((a, b) => (b.assetCount || 0) - (a.assetCount || 0)).slice(0, 5),
@@ -172,9 +175,9 @@ const Dashboard = memo(() => {
 
   const greeting = useMemo(() => {
     const hour = new Date().getHours();
-    if (hour < 12) return 'Good morning';
-    if (hour < 18) return 'Good afternoon';
-    return 'Good evening';
+    if (hour < 12) return 'Selamat pagi';
+    if (hour < 18) return 'Selamat siang';
+    return 'Selamat malam';
   }, []);
 
   const handleViewAsset = useCallback((asset) => {
@@ -229,7 +232,7 @@ const Dashboard = memo(() => {
                 typeBreakdown={typeBreakdown}
               />
               <div className="bg-white rounded-xl border border-neutral-200 p-4 hover:border-neutral-300 transition-all duration-200 flex flex-col min-h-0">
-                <CardHeader label="Needs Update" icon={HiExclamationCircle} /> {/* Changed to English */}
+                <CardHeader label="Perlu Diupdate" icon={HiExclamationCircle} />
                 <div className="border-t border-neutral-200 my-3" />
                 <h3 className="text-2xl font-bold text-neutral-900 tracking-tight">
                   {statusCounts['Perlu Diupdate'].toLocaleString()}
@@ -238,7 +241,7 @@ const Dashboard = memo(() => {
             </div>
             {/* Kanan: Status Aset (chart) */}
             <div className="bg-white rounded-xl border border-neutral-200 p-4 hover:border-neutral-300 transition-all duration-200 flex flex-col min-h-0">
-              <CardHeader label="Asset Status" icon={HiChartPie} /> {/* Changed to English */}
+              <CardHeader label="Status Aset" icon={HiChartPie} />
               <div className="border-t border-neutral-200 my-3" />
               <div className="flex-1 min-h-0 flex items-center">
                 <StatusPieChart
@@ -270,7 +273,7 @@ const Dashboard = memo(() => {
             {/* Kanan: Admin Pusat = Top Branches; Admin Cabang = Status Aset chart */}
             {isAdminPusat ? (
               <div className="bg-white rounded-xl border border-neutral-200 p-4 flex flex-col min-h-0">
-                <CardHeader label="Top Branches" icon={HiCube} />
+                <CardHeader label="Cabang Teratas" icon={HiCube} />
                 <div className="border-t border-neutral-200 my-3" />
                 <div className="flex flex-col gap-[2px] max-h-[200px] overflow-y-auto overflow-x-hidden scroll-smooth flex-1 min-h-0">
                   {top5Branches.map((branch, index) => (
@@ -291,7 +294,7 @@ const Dashboard = memo(() => {
               </div>
             ) : (
               <div className="bg-white rounded-xl border border-neutral-200 p-4 flex flex-col min-h-0">
-                <CardHeader label="Asset Status" icon={HiChartPie} /> {/* Changed to English */}
+                <CardHeader label="Status Aset" icon={HiChartPie} />
                 <div className="border-t border-neutral-200 my-3" />
                 <div className="flex-1 min-h-0 flex items-center">
                   <StatusPieChart

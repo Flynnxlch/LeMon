@@ -51,11 +51,13 @@ const AssetRusak = memo(() => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [repairInfo, setRepairInfo] = useState(null);
 
-  const { data: assetsRusak = [] } = useAssets({ status: 'Rusak' }, { enabled: tab === TAB_RUSAK });
-  const { data: assetsDalamPerbaikan = [] } = useAssets(
-    { status: 'Dalam Perbaikan' },
+  const { data: assetsRusakResult = { data: [] } } = useAssets({ status: 'Rusak', limit: 200 }, { enabled: tab === TAB_RUSAK });
+  const { data: assetsDalamPerbaikanResult = { data: [] } } = useAssets(
+    { status: 'Dalam Perbaikan', limit: 200 },
     { enabled: tab === TAB_DALAM_PERBAIKAN }
   );
+  const assetsRusak = assetsRusakResult.data;
+  const assetsDalamPerbaikan = assetsDalamPerbaikanResult.data;
   const { data: branches = [] } = useBranches();
 
   const refetch = useCallback(() => {
@@ -240,7 +242,7 @@ const AssetRusak = memo(() => {
   }, [tab]);
 
   const goToPage = useCallback((page) => {
-    setCurrentPage((p) => Math.max(1, Math.min(page, totalPages)));
+    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
   }, [totalPages]);
 
   return (
@@ -385,7 +387,7 @@ const AssetRusak = memo(() => {
             </p>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">Repair {/* Changed to English */}</label>
+                <label className="block text-sm font-medium text-neutral-700 mb-2">Perbaikan</label>
                 <div className="space-y-2">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -395,7 +397,7 @@ const AssetRusak = memo(() => {
                       checked={perbaikanForm.repairType === 'at_branch'}
                       onChange={handlePerbaikanChange}
                     />
-                    <span className="text-sm">Repaired at this branch {/* Changed to English */}</span>
+                    <span className="text-sm">Perbaikan di cabang ini</span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -405,14 +407,14 @@ const AssetRusak = memo(() => {
                       checked={perbaikanForm.repairType === 'transfer'}
                       onChange={handlePerbaikanChange}
                     />
-                    <span className="text-sm">Temporarily transfer to another branch for repair {/* Changed to English */}</span>
+                    <span className="text-sm">Transfer sementara ke cabang lain untuk perbaikan</span>
                   </label>
                 </div>
               </div>
               {perbaikanForm.repairType === 'transfer' && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">Target Branch {/* Changed to English */}</label>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">Cabang Tujuan</label>
                     <select
                       name="toBranchId"
                       value={perbaikanForm.toBranchId}
@@ -427,7 +429,7 @@ const AssetRusak = memo(() => {
                     {errors.toBranchId && <p className="mt-1 text-sm text-red-500">{errors.toBranchId}</p>}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">Notes (optional) {/* Changed to English */}</label>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">Catatan (Opsional)</label>
                     <textarea
                       name="notes"
                       value={perbaikanForm.notes}
@@ -476,12 +478,12 @@ const AssetRusak = memo(() => {
             )}
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">Asset Condition Photos After Repair (1–4 photos) {/* Changed to English */}</label>
+                <label className="block text-sm font-medium text-neutral-700 mb-2">Foto Kondisi Aset Setelah Perbaikan (1–4 foto)</label>
                 <PhotoUpload photos={photos} onChange={setPhotos} maxPhotos={4} label="" helperText="Upload 1–4 foto" error={errors.photos} />
               </div>
               <PdfUpload file={selesaiBeritaAcara} onChange={setSelesaiBeritaAcara} error={errors.beritaAcara} required />
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">Location (optional) {/* Changed to English */}</label>
+                <label className="block text-sm font-medium text-neutral-700 mb-2">Lokasi (Opsional)</label>
                 <GeolocationPicker
                   latitude={selesaiForm.latitude}
                   longitude={selesaiForm.longitude}
@@ -490,7 +492,7 @@ const AssetRusak = memo(() => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">Assignment After Repair {/* Changed to English */}</label>
+                <label className="block text-sm font-medium text-neutral-700 mb-2">Penugasan Setelah Perbaikan</label>
                 <div className="space-y-2">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -500,7 +502,7 @@ const AssetRusak = memo(() => {
                       checked={selesaiForm.returnToPreviousUser === true}
                       onChange={handleSelesaiChange}
                     />
-                    <span className="text-sm">Return to Previous User {/* Changed to English */}</span>
+                    <span className="text-sm">Kembalikan ke Pemegang Sebelumnya</span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -510,19 +512,19 @@ const AssetRusak = memo(() => {
                       checked={selesaiForm.returnToPreviousUser === false}
                       onChange={handleSelesaiChange}
                     />
-                    <span className="text-sm">Reassign to Another User {/* Changed to English */}</span>
+                    <span className="text-sm">Tugaskan ke Pemegang Baru</span>
                   </label>
                 </div>
               </div>
               {!selesaiForm.returnToPreviousUser && (
                 <div className="p-4 bg-neutral-50 rounded-lg border border-neutral-200 space-y-4">
-                  <h4 className="text-sm font-semibold text-neutral-900">New Holder Data {/* Changed to English */}</h4>
+                  <h4 className="text-sm font-semibold text-neutral-900">Data Pemegang Baru</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Input label="Full Name" name="holderFullName" value={selesaiForm.holderFullName} onChange={handleSelesaiChange} error={errors.holderFullName} required /> {/* Changed to English */}
+                    <Input label="Nama Lengkap" name="holderFullName" value={selesaiForm.holderFullName} onChange={handleSelesaiChange} error={errors.holderFullName} required />
                     <Input label="NIP" name="holderNip" value={selesaiForm.holderNip} onChange={handleSelesaiChange} error={errors.holderNip} required />
-                    <Input label="Division" name="holderDivision" value={selesaiForm.holderDivision} onChange={handleSelesaiChange} error={errors.holderDivision} required /> {/* Changed to English */}
-                    <Input label="Email" name="holderEmail" type="email" value={selesaiForm.holderEmail} onChange={handleSelesaiChange} error={errors.holderEmail} required />
-                    <Input label="Phone" name="holderPhone" value={selesaiForm.holderPhone} onChange={handleSelesaiChange} error={errors.holderPhone} required /> {/* Changed to English */}
+                    <Input label="Divisi/Unit Kerja" name="holderDivision" value={selesaiForm.holderDivision} onChange={handleSelesaiChange} error={errors.holderDivision} required />
+                    <Input label="Alamat Email" name="holderEmail" type="email" value={selesaiForm.holderEmail} onChange={handleSelesaiChange} error={errors.holderEmail} required />
+                    <Input label="Nomor Telepon" name="holderPhone" value={selesaiForm.holderPhone} onChange={handleSelesaiChange} error={errors.holderPhone} required />
                   </div>
                 </div>
               )}

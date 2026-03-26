@@ -102,7 +102,7 @@ const AddUserToBranchModal = memo(({ isOpen, onClose, onSubmit, branches }) => {
 
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           <Input
-            label="Full Name"
+            label="Nama Lengkap"
             name="name"
             value={formData.name}
             onChange={handleChange}
@@ -112,7 +112,7 @@ const AddUserToBranchModal = memo(({ isOpen, onClose, onSubmit, branches }) => {
           />
 
           <Input
-            label="Email Address"
+            label="Alamat Email"
             name="email"
             type="email"
             value={formData.email}
@@ -125,7 +125,7 @@ const AddUserToBranchModal = memo(({ isOpen, onClose, onSubmit, branches }) => {
           {/* Role: only Admin Pusat / Admin Cabang */}
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-1.5">
-              Role <span className="text-red-500">*</span>
+              Peran <span className="text-red-500">*</span>
             </label>
             <select
               name="role"
@@ -151,7 +151,7 @@ const AddUserToBranchModal = memo(({ isOpen, onClose, onSubmit, branches }) => {
           {!isAdminPusat && (
             <div>
               <label className="block text-sm font-medium text-neutral-700 mb-1.5">
-                Branch <span className="text-red-500">*</span>
+                Cabang <span className="text-red-500">*</span>
               </label>
               <select
                 name="branchId"

@@ -9,7 +9,7 @@ const GeolocationPicker = memo(({
   onChange, 
   error,
   disabled = false,
-  label = "Location",
+  label = "Lokasi",
   showAddress = true
 }) => {
   const [loading, setLoading] = useState(false);
@@ -193,7 +193,7 @@ const GeolocationPicker = memo(({
       {/* Address Input */}
       {showAddress && (
         <Input
-          label="Address"
+          label="Alamat"
           value={address || ''}
           onChange={() => {}}
           placeholder="Address will appear automatically from reverse geolocation"

@@ -77,12 +77,24 @@ export async function getAccountRequests(status) {
 }
 
 export async function createAccountRequest(data, passwordHash) {
+  const normalizedEmail = data.email.trim().toLowerCase();
+
+  const existingUser = await prisma.user.findUnique({
+    where: { email: normalizedEmail },
+    select: { id: true },
+  });
+  if (existingUser) {
+    throw new Error('EMAIL_ALREADY_REGISTERED');
+  }
+
   const existing = await prisma.accountRequest.findFirst({
-    where: { email: data.email, status: 'Pending' },
+    where: { email: normalizedEmail, status: 'Pending' },
   });
   if (existing) {
-    throw new Error('A pending account request with this email already exists');
+    throw new Error('EMAIL_PENDING_REQUEST');
   }
+
+  data = { ...data, email: normalizedEmail };
   const req = await prisma.accountRequest.create({
     data: {
       name: data.name,
@@ -118,18 +130,26 @@ export async function approveAccountRequest(requestId, adminUserId, options = {}
   if (req.status !== 'Pending') throw new Error('Request already processed');
   if (!assignedBranchId) throw new Error('Branch must be assigned when approving');
   const passwordHash = optionalPasswordHash || req.passwordHash;
-  const user = await prisma.user.create({
-    data: {
-      name: req.name,
-      email: req.email,
-      password: passwordHash,
-      role: req.role,
-      branchId: assignedBranchId,
-      nip: req.nip,
-      phone: req.phone,
-      status: 'Active',
-    },
-  });
+  let user;
+  try {
+    user = await prisma.user.create({
+      data: {
+        name: req.name,
+        email: req.email,
+        password: passwordHash,
+        role: req.role,
+        branchId: assignedBranchId,
+        nip: req.nip,
+        phone: req.phone,
+        status: 'Active',
+      },
+    });
+  } catch (err) {
+    if (err.code === 'P2002') {
+      throw new Error('EMAIL_ALREADY_REGISTERED');
+    }
+    throw err;
+  }
   await prisma.accountRequest.update({
     where: { id: requestId },
     data: { status: 'Approved', processedAt: new Date() },

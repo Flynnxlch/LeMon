@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import { HiPlus } from 'react-icons/hi';
+import { HiChevronLeft, HiChevronRight, HiPlus } from 'react-icons/hi';
 import { useSearchParams } from 'react-router-dom';
 import Button from '../components/common/Button/Button';
 import AddAssetModal from '../components/features/AddAssetModal/AddAssetModal';
@@ -49,15 +49,18 @@ const Assets = memo(() => {
   const [assetToTransfer, setAssetToTransfer] = useState(null);
   const [showDetailOverlay, setShowDetailOverlay] = useState(false);
   const [branchFilter, setBranchFilter] = useState('');
+  const [page, setPage] = useState(1);
+  const PAGE_LIMIT = 50;
 
   const assetParams = useMemo(() => {
-    const p = {};
-    // Admin Cabang: filter by assigned branch. Admin Pusat: see all branches (no branchId; filter via UI).
+    const p = { page, limit: PAGE_LIMIT };
+    // Admin Cabang: always scoped to their branch. Admin Pusat: optional branch filter from UI.
     if (isAdminCabang && user?.branch_id) p.branchId = user.branch_id;
+    if (isAdminPusat && branchFilter) p.branchId = branchFilter;
     return p;
-  }, [isAdminCabang, user?.branch_id]);
+  }, [isAdminCabang, isAdminPusat, user?.branch_id, branchFilter, page]);
 
-  const { data: rawAssets = [], isLoading: assetsLoading } = useAssets(assetParams, {
+  const { data: assetsResult = { data: [], total: 0 }, isLoading: assetsLoading } = useAssets(assetParams, {
     enabled: !!user,
   });
 
@@ -84,12 +87,11 @@ const Assets = memo(() => {
   const createTransferMutation = useCreateTransferRequest();
   const createAssetRequestMutation = useCreateAssetRequest();
 
-  const branchAssets = useMemo(() => applyDueUpdateStatus(rawAssets), [rawAssets]);
+  const totalPages = Math.ceil((assetsResult.total || 0) / PAGE_LIMIT);
 
-  const filteredAssets = useMemo(() => {
-    if (!isAdminPusat || !branchFilter) return branchAssets;
-    return branchAssets.filter((a) => a.branch_id === branchFilter);
-  }, [branchAssets, isAdminPusat, branchFilter]);
+  // branchFilter is applied server-side via assetParams — no client-side re-filter needed
+  const branchAssets = useMemo(() => applyDueUpdateStatus(assetsResult.data), [assetsResult.data]);
+  const filteredAssets = branchAssets;
 
   const serialFromUrl = searchParams.get('serial');
   useEffect(() => {
@@ -237,7 +239,7 @@ const Assets = memo(() => {
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-neutral-900 tracking-tight mb-2">
-            Asset Management
+            Manajemen Aset
           </h1>
           <p className="text-sm text-neutral-500">
             {/* Changed to Indonesian */}
@@ -254,7 +256,7 @@ const Assets = memo(() => {
             className="flex items-center gap-2 transition-all duration-200"
           >
             <HiPlus className="w-5 h-5" />
-            {isAdminCabang ? 'Request New Asset' : 'Add Asset'}
+            {isAdminCabang ? 'Ajukan Aset Baru' : 'Tambah Aset'}
           </Button>
         )}
       </div>
@@ -272,8 +274,33 @@ const Assets = memo(() => {
             selectedAssetId={selectedAssetId}
             branches={isAdminPusat ? branches : []}
             branchFilter={branchFilter}
-            onBranchFilterChange={setBranchFilter}
+            onBranchFilterChange={(v) => { setBranchFilter(v); setPage(1); }}
           />
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-4 px-1">
+              <span className="text-sm text-neutral-500">
+                Halaman {page} dari {totalPages} &bull; {assetsResult.total} aset
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="p-1.5 rounded-lg border border-neutral-200 text-neutral-600 hover:bg-neutral-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  <HiChevronLeft className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  className="p-1.5 rounded-lg border border-neutral-200 text-neutral-600 hover:bg-neutral-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  <HiChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {selectedAsset && (

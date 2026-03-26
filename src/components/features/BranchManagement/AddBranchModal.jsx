@@ -73,7 +73,7 @@ const AddBranchModal = memo(({ isOpen, onClose, onSubmit }) => {
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           <Input
-            label="Branch Name"
+            label="Nama Cabang"
             name="name"
             value={formData.name}
             onChange={handleChange}
@@ -83,7 +83,7 @@ const AddBranchModal = memo(({ isOpen, onClose, onSubmit }) => {
           />
 
           <Input
-            label="City (optional)"
+            label="Kota (Opsional)"
             name="city"
             value={formData.city}
             onChange={handleChange}

@@ -58,9 +58,10 @@ export async function getProgressTrack(opts) {
 
   const historyWhere = { asset: assetWhere };
   const transferWhere = { asset: assetWhere };
+  const reassignWhere = { asset: assetWhere };
   const assetReqWhere = effectiveBranchId ? { branchId: effectiveBranchId } : {};
 
-  const [historyRows, transferRows, assetReqRows] = await Promise.all([
+  const [historyRows, transferRows, assetReqRows, reassignRows] = await Promise.all([
     prisma.assetHistory.findMany({
       where: historyWhere,
       orderBy: { createdAt: 'desc' },
@@ -86,6 +87,15 @@ export async function getProgressTrack(opts) {
       include: {
         requestedBy: { select: { id: true, name: true } },
         branch: { select: { id: true, name: true } },
+      },
+    }),
+    prisma.reassignmentRequest.findMany({
+      where: reassignWhere,
+      orderBy: { requestDate: 'desc' },
+      take: 500,
+      include: {
+        asset: { select: { id: true, serialNumber: true, branchId: true, branch: { select: { name: true } } } },
+        requestedBy: { select: { id: true, name: true } },
       },
     }),
   ]);
@@ -129,7 +139,20 @@ export async function getProgressTrack(opts) {
     createdAt: r.requestDate,
   }));
 
-  let merged = [...historyItems, ...transferItems, ...assetReqItems];
+  const reassignItems = reassignRows.map((r) => ({
+    id: `reassign-${r.id}`,
+    type: 'reassignment_request',
+    assetId: r.assetId,
+    serialNumber: r.asset?.serialNumber ?? '',
+    branchId: r.asset?.branchId ?? null,
+    branchName: r.asset?.branch?.name ?? null,
+    description: `Permintaan reassign ke: ${r.newHolderFullName ?? '—'}`,
+    performedBy: r.requestedBy?.name ?? null,
+    status: r.status,
+    createdAt: r.requestDate,
+  }));
+
+  let merged = [...historyItems, ...transferItems, ...assetReqItems, ...reassignItems];
   merged.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   if (searchLower) {

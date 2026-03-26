@@ -76,7 +76,7 @@ const AssetSubmissionForm = memo(() => {
     const files = Array.from(e.target.files);
     
     if (photos.length + files.length > 4) {
-      alert('You can upload a maximum of 4 photos');
+      alert('Maksimal 4 foto yang dapat diunggah');
       return;
     }
 
@@ -150,7 +150,7 @@ const AssetSubmissionForm = memo(() => {
 
   const handleGetLocation = useCallback(async () => {
     if (!navigator.geolocation) {
-      setLocationError('Geolocation is not supported by your browser');
+      setLocationError('Geolokasi tidak didukung oleh browser Anda');
       return;
     }
 
@@ -178,19 +178,19 @@ const AssetSubmissionForm = memo(() => {
         setLocationLoading(false);
       },
       (error) => {
-        let errorMessage = 'Failed to get location';
+        let errorMessage = 'Gagal mendapatkan lokasi';
         switch (error.code) {
           case error.PERMISSION_DENIED:
-            errorMessage = 'Location permission denied. Please enable location access.';
+            errorMessage = 'Izin lokasi ditolak. Aktifkan akses lokasi di browser Anda.';
             break;
           case error.POSITION_UNAVAILABLE:
-            errorMessage = 'Location information unavailable.';
+            errorMessage = 'Informasi lokasi tidak tersedia.';
             break;
           case error.TIMEOUT:
-            errorMessage = 'Location request timed out.';
+            errorMessage = 'Permintaan lokasi habis waktu.';
             break;
           default:
-            errorMessage = 'An unknown error occurred.';
+            errorMessage = 'Terjadi kesalahan yang tidak diketahui.';
         }
         setLocationError(errorMessage);
         setLocationLoading(false);
@@ -215,13 +215,13 @@ const AssetSubmissionForm = memo(() => {
 
     // Validate photos (3-4 required)
     if (photos.length < 3 || photos.length > 4) {
-      alert('Please upload 3 to 4 photos');
+      alert('Silakan unggah 3 hingga 4 foto');
       return;
     }
 
     // Validate location
     if (!location) {
-      setLocationError('Please capture your location');
+      setLocationError('Silakan ambil lokasi Anda');
       return;
     }
 
@@ -263,7 +263,7 @@ const AssetSubmissionForm = memo(() => {
       photos.forEach(photo => URL.revokeObjectURL(photo.preview));
     } catch (error) {
       console.error('Submission error:', error);
-      alert('Failed to submit. Please try again.');
+      alert('Gagal mengirim. Silakan coba lagi.');
     } finally {
       setUploading(false);
     }
@@ -286,13 +286,13 @@ const AssetSubmissionForm = memo(() => {
             <HiCheckCircle className="w-10 h-10 text-green-600" />
           </div>
           <h3 className="text-2xl font-bold text-neutral-900 mb-2 tracking-tight">
-            Submission Successful!
+            Pengiriman Berhasil!
           </h3>
           <p className="text-neutral-500 mb-6">
-            Your asset status update has been recorded.
+            Pembaruan status aset Anda telah dicatat.
           </p>
           <Button variant="primary" onClick={handleReset}>
-            Submit Another
+            Kirim Lagi
           </Button>
         </div>
       </Card>
@@ -300,12 +300,12 @@ const AssetSubmissionForm = memo(() => {
   }
 
   return (
-    <Card title="Submit Asset Status" subtitle="Scan or enter serial number and upload photos">
+    <Card title="Kirim Status Aset" subtitle="Pindai atau masukkan nomor seri dan unggah foto">
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Serial Number Input */}
         <div>
           <Input
-            label="Asset Serial Number"
+            label="Nomor Seri Aset"
             type="text"
             name="serialNumber"
             value={serialNumber}
@@ -313,7 +313,7 @@ const AssetSubmissionForm = memo(() => {
             placeholder="e.g., SN-ABC12345"
             required
             error={serialNumberError}
-            helperText="Enter or scan the asset's serial number"
+            helperText="Masukkan atau pindai nomor seri aset"
             autoComplete="off"
           />
         </div>
@@ -321,9 +321,9 @@ const AssetSubmissionForm = memo(() => {
         {/* Photo Upload Section */}
         <div>
           <label className="block text-sm font-medium text-neutral-700 mb-3">
-            Asset Photos <span className="text-red-500">*</span>
+            Foto Aset <span className="text-red-500">*</span>
             <span className="ml-2 text-xs font-normal text-neutral-500">
-              (Required: 3-4 photos)
+              (Wajib: 3-4 foto)
             </span>
           </label>
 
@@ -346,7 +346,7 @@ const AssetSubmissionForm = memo(() => {
                 aria-label="Add photo"
               >
                 <HiCamera className="w-8 h-8 mb-2" />
-                <span className="text-sm font-medium">Add Photo</span>
+                <span className="text-sm font-medium">Tambah Foto</span>
               </button>
             )}
           </div>
@@ -362,16 +362,16 @@ const AssetSubmissionForm = memo(() => {
           />
 
           <p className="text-xs text-neutral-500">
-            {photos.length}/4 photos uploaded. 
-            {photos.length < 3 && ` ${3 - photos.length} more required.`}
-            {photos.length >= 3 && ' Photos will be automatically compressed.'}
+            {photos.length}/4 foto diunggah.
+            {photos.length < 3 && ` ${3 - photos.length} lagi diperlukan.`}
+            {photos.length >= 3 && ' Foto akan dikompres secara otomatis.'}
           </p>
         </div>
 
         {/* Location Section */}
         <div>
           <label className="block text-sm font-medium text-neutral-700 mb-3">
-            Location <span className="text-red-500">*</span>
+            Lokasi <span className="text-red-500">*</span>
           </label>
 
           {!location ? (
@@ -384,7 +384,7 @@ const AssetSubmissionForm = memo(() => {
                 className="w-full sm:w-auto"
               >
                 <HiLocationMarker className="w-5 h-5 mr-2" />
-                {locationLoading ? 'Getting Location...' : 'Capture Location'}
+                {locationLoading ? 'Mendapatkan Lokasi...' : 'Ambil Lokasi'}
               </Button>
               
               {locationError && (
@@ -401,7 +401,7 @@ const AssetSubmissionForm = memo(() => {
                   <HiCheckCircle className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-green-900 mb-2">
-                      Location Captured
+                      Lokasi Berhasil Diambil
                     </p>
                     
                     {/* Coordinates */}
@@ -410,7 +410,7 @@ const AssetSubmissionForm = memo(() => {
                         <span className="font-semibold">Lat:</span> {location.latitude.toFixed(6)}, <span className="font-semibold">Lng:</span> {location.longitude.toFixed(6)}
                       </p>
                       <p className="text-xs text-green-600">
-                        <span className="font-semibold">Accuracy:</span> &plusmn;{location.accuracy.toFixed(0)}m
+                        <span className="font-semibold">Akurasi:</span> &plusmn;{location.accuracy.toFixed(0)}m
                       </p>
                     </div>
                     
@@ -418,19 +418,19 @@ const AssetSubmissionForm = memo(() => {
                     {location.address && (
                       <div className="pt-3 border-t border-green-200 space-y-1.5">
                         <p className="text-xs font-semibold text-green-900 mb-1.5">
-                          Address Details:
+                          Detail Alamat:
                         </p>
                         <div className="grid grid-cols-1 gap-1.5">
                           <div className="flex items-start gap-2">
-                            <span className="text-xs text-green-700 font-medium min-w-[80px]">Address:</span>
+                            <span className="text-xs text-green-700 font-medium min-w-[80px]">Alamat:</span>
                             <span className="text-xs text-green-800 flex-1">{location.address}</span>
                           </div>
                           <div className="flex items-start gap-2">
-                            <span className="text-xs text-green-700 font-medium min-w-[80px]">City:</span>
+                            <span className="text-xs text-green-700 font-medium min-w-[80px]">Kota:</span>
                             <span className="text-xs text-green-800">{location.city}</span>
                           </div>
                           <div className="flex items-start gap-2">
-                            <span className="text-xs text-green-700 font-medium min-w-[80px]">Postal Code:</span>
+                            <span className="text-xs text-green-700 font-medium min-w-[80px]">Kode Pos:</span>
                             <span className="text-xs text-green-800">{location.postalCode}</span>
                           </div>
                         </div>
@@ -460,7 +460,7 @@ const AssetSubmissionForm = memo(() => {
             disabled={uploading || photos.length < 3 || !location}
             className="flex-1"
           >
-            {uploading ? 'Submitting...' : 'Submit Asset Status'}
+            {uploading ? 'Mengirim...' : 'Kirim Status Aset'}
           </Button>
           
           <Button

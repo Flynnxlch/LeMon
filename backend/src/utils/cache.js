@@ -20,7 +20,7 @@ export { cache, KEYS };
 export function invalidateAssets() {
   const keys = cache.keys();
   keys.forEach((k) => {
-    if (k === KEYS.ASSETS || k.startsWith('asset:') || k.startsWith('assets')) cache.del(k);
+    if (k === KEYS.ASSETS || k.startsWith('asset:') || k.startsWith('assets') || k.startsWith('asset_stats')) cache.del(k);
   });
 }
 

@@ -216,7 +216,7 @@ const AddAssetModal = memo(({ isOpen, onClose, onSubmit, branches = [], branches
           {/* Serial Number */}
           <div>
             <Input
-              label="Serial Number"
+              label="Nomor Seri"
               name="serialNumber"
               value={formData.serialNumber}
               onChange={handleChange}
@@ -229,7 +229,7 @@ const AddAssetModal = memo(({ isOpen, onClose, onSubmit, branches = [], branches
           {/* Branch - data dari database */}
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-2">
-              Branch <span className="text-red-500">*</span>
+              Cabang <span className="text-red-500">*</span>
             </label>
             <select
               name="branchId"
@@ -344,7 +344,7 @@ const AddAssetModal = memo(({ isOpen, onClose, onSubmit, branches = [], branches
 
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-2">
-                  Detail <span className="text-neutral-400 text-xs font-normal">(Optional)</span>
+                  Detail <span className="text-neutral-400 text-xs font-normal">(Opsional)</span>
                 </label>
                 <textarea
                   name="detail"
@@ -361,7 +361,7 @@ const AddAssetModal = memo(({ isOpen, onClose, onSubmit, branches = [], branches
           {/* Photo Upload */}
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-2">
-              Asset Photo <span className="text-red-500">*</span>
+              Foto Aset <span className="text-red-500">*</span>
             </label>
 
             {!formData.photoPreview ? (

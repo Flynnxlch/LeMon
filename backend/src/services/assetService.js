@@ -43,6 +43,10 @@ function mapAsset(asset) {
 }
 
 export async function getAssets(filters, userRole, userBranchId) {
+  const page = Math.max(1, filters.page ?? 1);
+  const limit = Math.min(200, Math.max(1, filters.limit ?? 50));
+  const skip = (page - 1) * limit;
+
   const cacheKey = KEYS.ASSETS + JSON.stringify({ filters, userRole, userBranchId });
   const cached = cache.get(cacheKey);
   if (cached) return cached;
@@ -69,50 +73,103 @@ export async function getAssets(filters, userRole, userBranchId) {
     }
   }
 
-  const assets = await prisma.asset.findMany({
-    where,
-    select: {
-      id: true,
-      serialNumber: true,
-      type: true,
-      brand: true,
-      model: true,
-      detail: true,
-      branchId: true,
-      status: true,
-      photoUrl: true,
-      updateImages: true,
-      latitude: true,
-      longitude: true,
-      dueUpdate: true,
-      contractEndDate: true,
-      updatedAt: true,
-      branch: { select: { name: true } },
-      assignments: {
-        orderBy: { assignedAt: 'desc' },
-        take: 1,
-        select: {
-          holderFullName: true,
-          holderNip: true,
-          holderBranchCode: true,
-          holderBranchId: true,
-          holderDivision: true,
-          holderEmail: true,
-          holderPhone: true,
-          updatedAt: true,
-          holderBranch: { select: { name: true } },
-        },
-      },
-      repairs: {
-        where: { status: 'in_repair' },
-        orderBy: { createdAt: 'desc' },
-        take: 1,
-        select: { repairType: true },
+  const assetSelect = {
+    id: true,
+    serialNumber: true,
+    type: true,
+    brand: true,
+    model: true,
+    detail: true,
+    branchId: true,
+    status: true,
+    photoUrl: true,
+    updateImages: true,
+    latitude: true,
+    longitude: true,
+    dueUpdate: true,
+    contractEndDate: true,
+    updatedAt: true,
+    branch: { select: { name: true } },
+    assignments: {
+      orderBy: { assignedAt: 'desc' },
+      take: 1,
+      select: {
+        holderFullName: true,
+        holderNip: true,
+        holderBranchCode: true,
+        holderBranchId: true,
+        holderDivision: true,
+        holderEmail: true,
+        holderPhone: true,
+        updatedAt: true,
+        holderBranch: { select: { name: true } },
       },
     },
-  });
+    repairs: {
+      where: { status: 'in_repair' },
+      orderBy: { createdAt: 'desc' },
+      take: 1,
+      select: { repairType: true },
+    },
+  };
 
-  const result = assets.map(mapAsset);
+  const [assets, total] = await Promise.all([
+    prisma.asset.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+      select: assetSelect,
+    }),
+    prisma.asset.count({ where }),
+  ]);
+
+  const result = { assets: assets.map(mapAsset), total, page, limit };
+  cache.set(cacheKey, result);
+  return result;
+}
+
+export async function getAssetStats(filters, userRole, userBranchId) {
+  const cacheKey = 'asset_stats' + JSON.stringify({ filters, userRole, userBranchId });
+  const cached = cache.get(cacheKey);
+  if (cached) return cached;
+
+  const where = { deletedAt: null };
+  if (filters.branchId) where.branchId = filters.branchId;
+  if (userRole === 'Admin Cabang' && userBranchId) where.branchId = userBranchId;
+
+  const contractFilter = filters.contract || 'active';
+  if (contractFilter !== 'all') {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (contractFilter === 'expired') {
+      where.contractEndDate = { lt: today };
+    } else {
+      where.OR = [{ contractEndDate: null }, { contractEndDate: { gte: today } }];
+    }
+  }
+
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const [total, statusGroups, overdueCount, typeGroups] = await Promise.all([
+    prisma.asset.count({ where }),
+    prisma.asset.groupBy({ by: ['status'], where, _count: { id: true } }),
+    prisma.asset.count({ where: { ...where, status: 'Available', dueUpdate: { lte: now } } }),
+    prisma.asset.groupBy({ by: ['type'], where, _count: { id: true } }),
+  ]);
+
+  const statusCounts = {
+    Available: 0, 'Perlu Diupdate': 0, Diperbaiki: 0, Rusak: 0, 'Dalam Perbaikan': 0, Hilang: 0,
+  };
+  for (const g of statusGroups) statusCounts[g.status] = g._count.id;
+  statusCounts['Perlu Diupdate'] = (statusCounts['Perlu Diupdate'] ?? 0) + overdueCount;
+  statusCounts['Available'] = Math.max(0, (statusCounts['Available'] ?? 0) - overdueCount);
+
+  const typeBreakdown = typeGroups
+    .map((g) => [g.type, g._count.id])
+    .sort((a, b) => b[1] - a[1]);
+
+  const result = { total, statusCounts, typeBreakdown };
   cache.set(cacheKey, result);
   return result;
 }

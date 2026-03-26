@@ -14,7 +14,8 @@ const ITEMS_PER_PAGE = 10;
 const AssetHilang = memo(() => {
   const toast = useToast();
   const queryClient = useQueryClient();
-  const { data: assetsHilang = [] } = useAssets({ status: 'Hilang' });
+  const { data: assetsHilangResult = { data: [] } } = useAssets({ status: 'Hilang', limit: 200 });
+  const assetsHilang = assetsHilangResult.data;
 
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedAsset, setSelectedAsset] = useState(null);
@@ -72,7 +73,7 @@ const AssetHilang = memo(() => {
   return (
     <MainLayout>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-neutral-900 tracking-tight mb-2">Missing Assets</h1> {/* Changed to English */}
+        <h1 className="text-2xl font-bold text-neutral-900 tracking-tight mb-2">Aset Hilang</h1>
         <p className="text-sm text-neutral-500">
           Daftar aset dengan status {STATUS_LABELS.Hilang}. Admin Pusat dapat memutuskan untuk melakukan pengadaan lagi (mengembalikan status ke Available) atau tidak.
         </p>
@@ -83,10 +84,10 @@ const AssetHilang = memo(() => {
           <table className="min-w-full divide-y divide-neutral-200">
             <thead className="bg-neutral-50">
               <tr>
-                <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Asset</th>
-                <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider hidden sm:table-cell">Branch {/* Changed to English */}</th>
+                <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Aset</th>
+                <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider hidden sm:table-cell">Cabang</th>
                 <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Status</th>
-                <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Actions {/* Changed to English */}</th>
+                <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Aksi</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-neutral-200">
@@ -142,7 +143,7 @@ const AssetHilang = memo(() => {
       {showDecisionModal && selectedAsset && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/40" onClick={closeDecision} aria-hidden="true" />
-          <Card title="Procurement Decision" className="relative w-full max-w-md"> {/* Changed to English */}
+          <Card title="Keputusan Pengadaan" className="relative w-full max-w-md">
             <div className="absolute top-4 right-4">
               <button type="button" onClick={closeDecision} disabled={isSubmitting} className="text-neutral-400 hover:text-neutral-900" aria-label="Tutup">
                 <HiX className="w-6 h-6" />

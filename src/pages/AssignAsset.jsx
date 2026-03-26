@@ -59,14 +59,14 @@ const AssignAsset = memo(() => {
     return { branchId: user.branch_id };
   }, [user.branch_id]);
 
-  const { data: rawAssets = [] } = useAssets(assetParams, {
+  const { data: rawAssetsResult = { data: [] } } = useAssets(assetParams, {
     enabled: !!user?.branch_id,
   });
 
   const { data: settings } = useSettings();
   const globalUpdateIntervalDays = settings?.defaultUpdateIntervalDays ? Number(settings.defaultUpdateIntervalDays) : 7;
 
-  const allAssets = useMemo(() => applyDueUpdateStatus(rawAssets), [rawAssets]);
+  const allAssets = useMemo(() => applyDueUpdateStatus(rawAssetsResult.data), [rawAssetsResult.data]);
 
   const selectedAsset = useMemo(() => {
     return allAssets.find(asset => asset.id === selectedAssetId);
@@ -227,10 +227,10 @@ const AssignAsset = memo(() => {
     if (activeAction === 'assign' && (photos.length < 1 || photos.length > 4)) {
       newErrors.photos = 'Upload 1 sampai 4 foto untuk verifikasi';
     }
-    if ((activeAction === 'update' || activeAction === 'updateRusak') && photos.length > 4) {
+    if (activeAction === 'update' && photos.length > 4) {
       newErrors.photos = 'Maksimal 4 foto';
     }
-    if ((activeAction === 'assign' || activeAction === 'update' || activeAction === 'updateRusak' || activeAction === 'laporkan_hilang') && !beritaAcara) {
+    if ((activeAction === 'assign' || activeAction === 'laporkan_hilang') && !beritaAcara) {
       newErrors.beritaAcara = 'Berita Acara (PDF) wajib diunggah';
     }
     if (activeAction === 'laporkan_hilang') {
@@ -315,20 +315,15 @@ const AssignAsset = memo(() => {
         newHolderLongitude: lng,
         notes: formData.reassignReason?.trim() || undefined,
       };
-      const reassignBodyOrFormData =
-        photos.length > 0 && photos.every((p) => p.file)
-          ? (() => {
-              const fd = new FormData();
-              Object.entries(reassignPayload).forEach(([k, v]) => {
-                if (v != null && v !== '') {
-                  const val = v instanceof Date ? v.toISOString() : (typeof v === 'object' ? JSON.stringify(v) : String(v));
-                  fd.append(k, val);
-                }
-              });
-              photos.forEach((p) => p.file && fd.append('photos', p.file));
-              return fd;
-            })()
-          : reassignPayload;
+      const fd = new FormData();
+      Object.entries(reassignPayload).forEach(([k, v]) => {
+        if (v != null && v !== '') {
+          const val = v instanceof Date ? v.toISOString() : (typeof v === 'object' ? JSON.stringify(v) : String(v));
+          fd.append(k, val);
+        }
+      });
+      photos.forEach((p) => p.file && fd.append('photos', p.file));
+      const reassignBodyOrFormData = fd;
       api.reassignmentRequests
         .create(reassignBodyOrFormData)
         .then(() => {
@@ -388,7 +383,7 @@ const AssignAsset = memo(() => {
       return;
     }
 
-    if (activeAction === 'update' || activeAction === 'updateRusak') {
+    if (activeAction === 'update') {
       const newStatus = updateVariantRef.current === 'Rusak' ? 'Rusak' : 'Available';
       const payload = {
         status: newStatus,
@@ -630,11 +625,11 @@ const AssignAsset = memo(() => {
                 photos={photos}
                 onChange={setPhotos}
                 maxPhotos={4}
-                label="Asset Condition Photo" // Changed to English
+                label="Foto Kondisi Aset"
                 helperText={activeAction === 'assign' ? 'Upload 1–4 foto untuk verifikasi (min. 1, max. 4)' : 'Upload 0–4 foto (opsional untuk update)'}
                 error={errors.photos}
               />
-              {(activeAction === 'assign' || activeAction === 'update' || activeAction === 'updateRusak') && (
+              {activeAction === 'assign' && (
                 <PdfUpload
                   file={beritaAcara}
                   onChange={setBeritaAcara}
@@ -652,7 +647,7 @@ const AssignAsset = memo(() => {
                   longitude={formData.longitude}
                   onChange={handleLocationChange}
                   error={errors.location}
-                  label="Asset Location"
+                  label="Lokasi Aset"
                   showAddress={true}
                 />
               </div>
@@ -662,7 +657,7 @@ const AssignAsset = memo(() => {
             {activeAction === 'reassign' && (
               <div className="border-t border-gray-100 pt-6">
                 <label className="block text-sm font-medium text-neutral-700 mb-1.5">
-                  Reassign Reason <span className="text-red-500">*</span> {/* Changed to English */}
+                  Alasan Reassign <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   name="reassignReason"
@@ -685,7 +680,7 @@ const AssignAsset = memo(() => {
               <div className="border-t border-gray-100 pt-6">
                 <div className="flex items-center justify-between mb-4">
                   <h4 className="text-md font-semibold text-neutral-900">
-                    Holder Information
+                    Informasi Pemegang Aset
                   </h4>
                   {formData.holderFullName && (
                     <button
@@ -700,7 +695,7 @@ const AssignAsset = memo(() => {
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <Input
-                      label="Full Name" // Changed to English
+                      label="Nama Lengkap"
                       name="holderFullName"
                       value={formData.holderFullName}
                       onChange={handleChange}
@@ -721,13 +716,13 @@ const AssignAsset = memo(() => {
                   {/* Cabang otomatis dari Admin Cabang yang login */}
                   {user?.branch_name && (
                     <div className="mb-2 p-3 bg-neutral-50 border border-neutral-200 rounded-lg">
-                      <p className="text-xs text-neutral-500 uppercase tracking-wider">Branch (automatic) {/* Changed to English */}</p>
+                      <p className="text-xs text-neutral-500 uppercase tracking-wider">Cabang (Otomatis)</p>
                       <p className="text-sm font-medium text-neutral-900 mt-0.5">{user.branch_name}</p>
                     </div>
                   )}
                   <div className="grid grid-cols-2 gap-4">
                     <Input
-                      label="Division/Work Unit" // Changed to English
+                      label="Divisi/Unit Kerja"
                       name="holderDivision"
                       value={formData.holderDivision}
                       onChange={handleChange}
@@ -738,7 +733,7 @@ const AssignAsset = memo(() => {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <Input
-                      label="Email"
+                      label="Alamat Email"
                       name="holderEmail"
                       type="email"
                       value={formData.holderEmail}
@@ -748,7 +743,7 @@ const AssignAsset = memo(() => {
                       placeholder="ahmad.santoso@company.com"
                     />
                     <Input
-                      label="Phone Number" // Changed to English
+                      label="Nomor Telepon"
                       name="holderPhone"
                       value={formData.holderPhone}
                       onChange={handleChange}

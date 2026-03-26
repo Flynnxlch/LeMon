@@ -123,7 +123,7 @@ const ReassignmentRequests = memo(() => {
     <MainLayout>
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-neutral-900 tracking-tight mb-2">
-          Reassignment Requests
+          Permintaan Reassignment
         </h1>
         <p className="text-sm text-neutral-500">
           Tinjau dan setujui permintaan reassignment aset dari Admin Cabang {/* Changed to Indonesian */}
@@ -154,19 +154,19 @@ const ReassignmentRequests = memo(() => {
             <thead className="bg-neutral-50">
               <tr>
                 <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">
-                  Asset
+                  Aset
                 </th>
                 <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider hidden sm:table-cell">
-                  From → To
+                  Dari → Ke
                 </th>
                 <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider hidden md:table-cell">
-                  Requested
+                  Diajukan
                 </th>
                 <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">
                   Status
                 </th>
                 <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">
-                  Actions
+                  Aksi
                 </th>
               </tr>
             </thead>
@@ -217,7 +217,7 @@ const ReassignmentRequests = memo(() => {
                         }}
                         className="text-sm font-medium text-neutral-900 hover:underline"
                       >
-                        View
+                        Lihat
                       </button>
                     </td>
                   </Motion.tr>
@@ -225,7 +225,7 @@ const ReassignmentRequests = memo(() => {
               ) : (
                 <tr>
                   <td colSpan="5" className="px-6 py-12 text-center text-neutral-500">
-                    No reassignment requests found
+                    Tidak ada permintaan reassignment ditemukan
                   </td>
                 </tr>
               )}
@@ -262,7 +262,7 @@ const ReassignmentRequests = memo(() => {
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold text-neutral-900">
-                  Reassignment Request Detail {/* Changed to English */}
+                  Detail Permintaan Reassignment
                 </h2>
                 <button
                   type="button"
@@ -276,7 +276,7 @@ const ReassignmentRequests = memo(() => {
 
               <div className="space-y-6">
                 <div className="p-4 bg-neutral-50 rounded-lg border border-neutral-200">
-                  <h3 className="text-sm font-semibold text-neutral-900 mb-3">Asset</h3>
+                  <h3 className="text-sm font-semibold text-neutral-900 mb-3">Aset</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                     <div>
                       <span className="text-neutral-500">Serial</span>
@@ -294,17 +294,17 @@ const ReassignmentRequests = memo(() => {
                 </div>
 
                 <div className="p-4 bg-neutral-50 rounded-lg border border-neutral-200">
-                  <h3 className="text-sm font-semibold text-neutral-900 mb-3">Old → New Holder {/* Changed to English */}</h3>
+                  <h3 className="text-sm font-semibold text-neutral-900 mb-3">Pemegang Lama → Baru</h3>
                   <div className="flex items-center gap-3 flex-wrap">
                     <div className="text-sm">
-                      <span className="text-neutral-500">From: {/* Changed to English */}</span>
+                      <span className="text-neutral-500">Dari: </span>
                       <span className="font-medium text-neutral-900">
                         {selectedRequest.currentHolderName || 'Tidak ada'}
                       </span>
                     </div>
                     <HiArrowRight className="w-5 h-5 text-neutral-400" />
                     <div className="text-sm">
-                      <span className="text-neutral-500">To: {/* Changed to English */}</span>
+                      <span className="text-neutral-500">Ke: </span>
                       <span className="font-medium text-neutral-900">
                         {selectedRequest.newHolderFullName}
                       </span>
@@ -315,7 +315,7 @@ const ReassignmentRequests = memo(() => {
                   </div>
                   <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                     <div>
-                      <span className="text-neutral-500">Division {/* Changed to English */}</span>
+                      <span className="text-neutral-500">Divisi</span>
                       <p className="font-medium text-neutral-900">{selectedRequest.newHolderDivision}</p>
                     </div>
                     <div>
@@ -326,7 +326,7 @@ const ReassignmentRequests = memo(() => {
                 </div>
 
                 <div>
-                  <h3 className="text-sm font-semibold text-neutral-900 mb-2">Reassign Reason {/* Changed to English */}</h3>
+                  <h3 className="text-sm font-semibold text-neutral-900 mb-2">Alasan Reassignment</h3>
                   <p className="text-sm text-neutral-700 bg-neutral-50 p-3 rounded-lg border border-neutral-200">
                     {selectedRequest.reason ?? selectedRequest.notes ?? '—'}
                   </p>

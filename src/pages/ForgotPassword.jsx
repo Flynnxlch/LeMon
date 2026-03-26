@@ -35,10 +35,10 @@ const ForgotPassword = memo(() => {
       if (res?.data?.registered) {
         setStep(2);
       } else {
-        setError('No account found with this email address.');
+        setError('Tidak ditemukan akun dengan alamat email ini.');
       }
     } catch {
-      setError('Verification failed. Please try again.');
+      setError('Verifikasi gagal. Silakan coba lagi.');
     } finally {
       setLoading(false);
     }
@@ -57,7 +57,7 @@ const ForgotPassword = memo(() => {
       });
       setSubmitted(true);
     } catch (err) {
-      setError(err.message || 'Failed to submit request. Please try again.');
+      setError(err.message || 'Gagal mengirim permintaan. Silakan coba lagi.');
     } finally {
       setLoading(false);
     }
@@ -80,17 +80,17 @@ const ForgotPassword = memo(() => {
               <HiCheckCircle className="w-10 h-10 text-green-600" />
             </div>
             <h2 className="text-2xl font-bold text-neutral-900 mb-3">
-              Request Submitted
+              Permintaan Terkirim
             </h2>
             <p className="text-neutral-500 mb-6">
-              Your password change request has been sent for admin approval.
+              Permintaan perubahan kata sandi Anda telah dikirim untuk persetujuan admin.
             </p>
             <p className="text-sm text-neutral-500 mb-6">
-              You will be able to sign in with your new password after an admin approves your request.
+              Anda dapat masuk dengan kata sandi baru setelah admin menyetujui permintaan Anda.
             </p>
             <Link to="/login">
               <Button variant="primary" size="lg" fullWidth>
-                Back to Login
+                Kembali ke Login
               </Button>
             </Link>
           </div>
@@ -109,19 +109,19 @@ const ForgotPassword = memo(() => {
               <img src="/lemon-18.svg" alt="Lease Monitor logo" className="w-16 h-16" />
             </div>
             <h1 className="text-3xl font-bold text-neutral-900 mb-2">
-              Set New Password
+              Atur Kata Sandi Baru
             </h1>
             <p className="text-neutral-500">
-              Enter your new password. Request will be sent for admin approval.
+              Masukkan kata sandi baru Anda. Permintaan akan dikirim untuk persetujuan admin.
             </p>
             <p className="text-sm text-neutral-500 mt-1">
-              Verified: {email}
+              Terverifikasi: {email}
             </p>
           </div>
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8">
             <form onSubmit={handleRequestPasswordChange} className="space-y-5" noValidate>
               <Input
-                label="New Password"
+                label="Kata Sandi Baru"
                 type="password"
                 name="newPassword"
                 value={newPassword}
@@ -130,12 +130,12 @@ const ForgotPassword = memo(() => {
                 required
                 icon={<HiLockClosed className="w-5 h-5" />}
                 error={passwordError || undefined}
-                helperText="Min 8 characters, include uppercase, lowercase, and number"
+                helperText="Minimal 8 karakter, termasuk huruf besar, huruf kecil, dan angka"
                 disabled={loading}
                 autoComplete="new-password"
               />
               <Input
-                label="Confirm New Password"
+                label="Konfirmasi Kata Sandi Baru"
                 type="password"
                 name="confirmPassword"
                 value={confirmPassword}
@@ -157,7 +157,7 @@ const ForgotPassword = memo(() => {
                 fullWidth
                 disabled={!canSubmitPassword || loading}
               >
-                {loading ? 'Submitting...' : 'Send for Admin Approval'}
+                {loading ? 'Mengirim...' : 'Kirim untuk Persetujuan Admin'}
               </Button>
             </form>
             <div className="mt-6">
@@ -167,7 +167,7 @@ const ForgotPassword = memo(() => {
                 className="flex items-center justify-center gap-2 text-sm text-neutral-500 hover:text-neutral-900 transition-colors w-full"
               >
                 <HiArrowLeft className="w-4 h-4" />
-                Use a different email
+                Gunakan email lain
               </button>
             </div>
           </div>
@@ -188,16 +188,16 @@ const ForgotPassword = memo(() => {
             <span className="text-white font-bold text-2xl">T</span>
           </div>
           <h1 className="text-3xl font-bold text-neutral-900 mb-2">
-            Forgot Password?
+            Lupa Kata Sandi?
           </h1>
           <p className="text-neutral-500">
-            Enter your email to verify your account
+            Masukkan email Anda untuk memverifikasi akun
           </p>
         </div>
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8">
           <form onSubmit={handleVerification} className="space-y-5" noValidate>
             <Input
-              label="Email Address"
+              label="Alamat Email"
               type="email"
               name="email"
               value={email}
@@ -208,7 +208,7 @@ const ForgotPassword = memo(() => {
               error={error || undefined}
               autoComplete="email"
               disabled={loading}
-              helperText="Enter the email address associated with your account"
+              helperText="Masukkan alamat email yang terhubung dengan akun Anda"
             />
             <Button
               type="submit"
@@ -217,7 +217,7 @@ const ForgotPassword = memo(() => {
               fullWidth
               disabled={!emailValid || loading}
             >
-              {loading ? 'Verifying...' : 'Verification'}
+              {loading ? 'Memverifikasi...' : 'Verifikasi'}
             </Button>
           </form>
           <div className="mt-6">
@@ -226,7 +226,7 @@ const ForgotPassword = memo(() => {
               className="flex items-center justify-center gap-2 text-sm text-neutral-500 hover:text-neutral-900 transition-colors"
             >
               <HiArrowLeft className="w-4 h-4" />
-              Back to Login
+              Kembali ke Login
             </Link>
           </div>
         </div>

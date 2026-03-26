@@ -6,6 +6,7 @@ import AddBranchModal from '../components/features/BranchManagement/AddBranchMod
 import AssignUserToBranchModal from '../components/features/BranchManagement/AssignUserToBranchModal';
 import MainLayout from '../components/layout/MainLayout/MainLayout';
 import { useToast } from '../context/ToastContext';
+import { truncate } from '../utils/assetConstants';
 import {
   useAccountRequests,
   useApproveAccountRequest,
@@ -406,11 +407,11 @@ const BranchUserManagement = memo(() => {
                           key={user.id}
                           className="hover:bg-neutral-50 transition-colors"
                         >
-                          <td className="px-4 py-3 font-medium text-neutral-900">
-                            {user.name}
+                          <td className="px-4 py-3 font-medium text-neutral-900 max-w-[150px]" title={user.name}>
+                            <span className="block truncate">{truncate(user.name, 15)}</span>
                           </td>
-                          <td className="px-4 py-3 text-neutral-500">
-                            {user.email}
+                          <td className="px-4 py-3 text-neutral-500 max-w-[200px]" title={user.email}>
+                            <span className="block truncate">{truncate(user.email, 20)}</span>
                           </td>
                           <td className="px-4 py-3">
                             <span className="text-neutral-900">
@@ -691,7 +692,7 @@ const BranchUserManagement = memo(() => {
               </div>
               <form onSubmit={handleSaveBranch} className="p-4 space-y-4">
                 <Input
-                  label="Branch Name"
+                  label="Nama Cabang"
                   name="name"
                   value={editBranchForm.name}
                   onChange={handleEditBranchChange}
@@ -700,7 +701,7 @@ const BranchUserManagement = memo(() => {
                   required
                 />
                 <Input
-                  label="City (optional)"
+                  label="Kota (Opsional)"
                   name="city"
                   value={editBranchForm.city}
                   onChange={handleEditBranchChange}

@@ -29,8 +29,11 @@ export async function createAccountRequest(req, res, next) {
     const result = await userService.createAccountRequest(rest, hash);
     res.status(201).json({ success: true, data: result });
   } catch (err) {
-    if (err.message?.includes('pending account request')) {
-      return res.status(409).json({ success: false, error: err.message });
+    if (err.message === 'EMAIL_ALREADY_REGISTERED') {
+      return res.status(409).json({ success: false, error: 'Email sudah terdaftar. Gunakan email lain.' });
+    }
+    if (err.message === 'EMAIL_PENDING_REQUEST') {
+      return res.status(409).json({ success: false, error: 'Sudah ada permintaan akun dengan email ini yang sedang menunggu persetujuan.' });
     }
     next(err);
   }
@@ -48,6 +51,9 @@ export async function approveAccountRequest(req, res, next) {
   } catch (err) {
     if (err.message === 'Account request not found' || err.message === 'Request already processed' || err.message === 'Branch must be assigned when approving') {
       return res.status(400).json({ success: false, error: err.message });
+    }
+    if (err.message === 'EMAIL_ALREADY_REGISTERED') {
+      return res.status(409).json({ success: false, error: 'Email sudah terdaftar pada akun lain.' });
     }
     next(err);
   }

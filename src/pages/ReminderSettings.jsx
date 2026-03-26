@@ -47,7 +47,7 @@ const ReminderSettings = memo(() => {
           <div className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-neutral-700 mb-2">
-                Update Interval <span className="text-red-500">*</span> {/* Changed to English */}
+                Interval Pembaruan <span className="text-red-500">*</span>
               </label>
               <select
                 value={defaultUpdateIntervalDays}

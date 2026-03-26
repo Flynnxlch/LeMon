@@ -162,6 +162,10 @@ export const api = {
       const q = new URLSearchParams(params).toString();
       return request(`assets${q ? `?${q}` : ''}`);
     },
+    stats: (params) => {
+      const q = new URLSearchParams(params).toString();
+      return request(`assets/stats${q ? `?${q}` : ''}`);
+    },
     get: (id) => request(`assets/${id}`),
     getHistory: (id) => request(`assets/${id}/history`).then((res) => res?.data ?? []),
     getBeritaAcara: (id) => request(`assets/${id}/berita-acara`).then((res) => res?.data ?? []),

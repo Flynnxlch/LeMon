@@ -23,6 +23,7 @@ import {
 const router = Router();
 
 router.get('/', authMiddleware, validateQuery(getAssetsQuerySchema), assetController.getAssets);
+router.get('/stats', authMiddleware, assetController.getAssetStats);
 router.get('/:id/repair', authMiddleware, assetController.getAssetRepair);
 router.get('/:id/history', authMiddleware, assetController.getAssetHistory);
 router.get('/:id/berita-acara', authMiddleware, assetController.getAssetBeritaAcara);

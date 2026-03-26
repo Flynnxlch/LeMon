@@ -146,7 +146,7 @@ const RequestNewAssetModal = memo(({ isOpen, onClose, onSubmit }) => {
       <form onSubmit={handleSubmit} className="flex flex-col min-h-0 flex-1 overflow-hidden">
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
           <Input
-            label="Serial Number"
+            label="Nomor Seri"
             name="serialNumber"
             value={formData.serialNumber}
             onChange={handleChange}
@@ -211,7 +211,7 @@ const RequestNewAssetModal = memo(({ isOpen, onClose, onSubmit }) => {
           )}
 
           <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-2">Detail (opsional)</label>
+            <label className="block text-sm font-medium text-neutral-700 mb-2">Detail (Opsional)</label>
             <textarea
               name="detail"
               value={formData.detail}

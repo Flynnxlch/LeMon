@@ -143,7 +143,7 @@ const AssetTransferModal = memo(({ isOpen, onClose, onSubmit, asset, assets = []
           {/* Asset by Serial Number */}
           <div>
             <label htmlFor="assetId" className="block text-sm font-medium text-neutral-700 mb-1.5">
-              Asset Serial Number <span className="text-red-500">*</span>
+              Nomor Seri Aset <span className="text-red-500">*</span>
             </label>
             <select
               id="assetId"
@@ -192,7 +192,7 @@ const AssetTransferModal = memo(({ isOpen, onClose, onSubmit, asset, assets = []
           {/* Destination Branch */}
           <div>
             <label htmlFor="toBranchId" className="block text-sm font-medium text-neutral-700 mb-1.5">
-              Destination Branch <span className="text-red-500">*</span>
+              Cabang Tujuan <span className="text-red-500">*</span>
             </label>
             <select
               id="toBranchId"
@@ -218,7 +218,7 @@ const AssetTransferModal = memo(({ isOpen, onClose, onSubmit, asset, assets = []
           {/* Notes */}
           <div>
             <label htmlFor="notes" className="block text-sm font-medium text-neutral-700 mb-1.5">
-              Reason for Transfer {!isDirectTransfer && <span className="text-red-500">*</span>}
+              Alasan Transfer {!isDirectTransfer && <span className="text-red-500">*</span>}
             </label>
             <textarea
               id="notes"

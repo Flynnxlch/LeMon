@@ -13,13 +13,22 @@ export async function getAssets(req, res, next) {
       status: q.status,
       excludeDeleted: q.excludeDeleted,
       contract: q.contract,
+      page: q.page,
+      limit: q.limit,
     };
-    const list = await assetService.getAssets(
-      filters,
-      req.user?.role,
-      req.user?.branchId
-    );
-    res.json({ success: true, data: list });
+    const result = await assetService.getAssets(filters, req.user?.role, req.user?.branchId);
+    res.json({ success: true, data: result.assets, total: result.total, page: result.page, limit: result.limit });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function getAssetStats(req, res, next) {
+  try {
+    const q = req.query;
+    const filters = { branchId: q.branchId, contract: q.contract };
+    const stats = await assetService.getAssetStats(filters, req.user?.role, req.user?.branchId);
+    res.json({ success: true, data: stats });
   } catch (err) {
     next(err);
   }
@@ -240,6 +249,11 @@ export async function assignAsset(req, res, next) {
 
 export async function getAssetRepair(req, res, next) {
   try {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    const asset = await assetService.getAssetById(req.params.id, req.user?.role, req.user?.branchId);
+    if (!asset) {
+      return res.status(404).json({ success: false, error: 'Asset not found' });
+    }
     const repair = await repairService.getActiveRepairByAssetId(req.params.id);
     res.json({ success: true, data: repair });
   } catch (err) {

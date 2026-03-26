@@ -128,7 +128,7 @@ const RequestNewAsset = memo(() => {
       <Card className="max-w-2xl">
         <form onSubmit={handleSubmit} className="space-y-6">
           <Input
-            label="Serial Number"
+            label="Nomor Seri"
             name="serialNumber"
             value={formData.serialNumber}
             onChange={handleChange}
@@ -139,7 +139,7 @@ const RequestNewAsset = memo(() => {
 
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-2">
-              Asset Type <span className="text-red-500">*</span> {/* Changed to English */}
+              Tipe Aset <span className="text-red-500">*</span>
             </label>
             <select
               name="type"
@@ -193,7 +193,7 @@ const RequestNewAsset = memo(() => {
           )}
 
           <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-2">Detail (optional) {/* Changed to English */}</label>
+            <label className="block text-sm font-medium text-neutral-700 mb-2">Detail (Opsional)</label>
             <textarea
               name="detail"
               value={formData.detail}
@@ -206,7 +206,7 @@ const RequestNewAsset = memo(() => {
 
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-2">
-              Asset Photo <span className="text-red-500">*</span> {/* Changed to English */}
+              Foto Aset <span className="text-red-500">*</span>
             </label>
             {!formData.photoPreview ? (
               <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer border-neutral-200 bg-neutral-50 hover:bg-neutral-100 transition-colors">

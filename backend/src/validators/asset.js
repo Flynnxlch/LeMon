@@ -71,6 +71,8 @@ export const getAssetsQuerySchema = z.object({
   status: z.enum(statusOptions).optional(),
   excludeDeleted: z.coerce.boolean().optional(),
   contract: z.enum(['active', 'expired', 'all']).optional(),
+  page: z.coerce.number().int().positive().optional(),
+  limit: z.coerce.number().int().min(1).max(200).optional(),
 }).strict();
 
 export const startRepairSchema = z.object({

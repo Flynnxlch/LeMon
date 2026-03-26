@@ -64,9 +64,9 @@ const Navbar = memo(({ onMenuClick }) => {
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
+    if (diffMins < 60) return `${diffMins} mnt lalu`;
+    if (diffHours < 24) return `${diffHours} jam lalu`;
+    if (diffDays < 7) return `${diffDays} hari lalu`;
     return d.toLocaleDateString('id-ID');
   };
 
@@ -113,7 +113,7 @@ const Navbar = memo(({ onMenuClick }) => {
             </button>
             
             <h1 className="text-base font-semibold text-neutral-900 hidden sm:block tracking-tight">
-              Asset Monitoring Dashboard
+              Dashboard Monitoring Aset
             </h1>
           </div>
           
@@ -140,7 +140,7 @@ const Navbar = memo(({ onMenuClick }) => {
               {showNotifications && (
                 <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-gray-200 z-[9999]" role="menu">
                   <div className="px-4 py-3 border-b border-gray-100">
-                    <h3 className="font-semibold text-neutral-900 text-sm">Notifications</h3>
+                    <h3 className="font-semibold text-neutral-900 text-sm">Notifikasi</h3>
                   </div>
                   <div className="max-h-72 overflow-y-auto">
                     {latestThree.length === 0 ? (
@@ -174,7 +174,7 @@ const Navbar = memo(({ onMenuClick }) => {
                       onClick={handleOpenViewAll}
                       className="text-sm text-neutral-900 hover:underline font-medium"
                     >
-                      View All Notification
+                      Lihat Semua Notifikasi
                     </button>
                   </div>
                 </div>
@@ -193,7 +193,7 @@ const Navbar = memo(({ onMenuClick }) => {
                 <div className="w-8 h-8 bg-neutral-900 rounded-full flex items-center justify-center">
                   <span className="text-white font-medium text-xs">{getInitials(user?.name)}</span>
                 </div>
-                <span className="text-sm font-medium text-neutral-700 hidden sm:block" title={user?.name}>{truncate(user?.name, 30)}</span>
+                <span className="text-sm font-medium text-neutral-700 hidden sm:block max-w-[120px] truncate" title={user?.name}>{truncate(user?.name, 15)}</span>
                 <HiChevronDown className="w-4 h-4 text-neutral-400" />
               </button>
               
@@ -201,7 +201,7 @@ const Navbar = memo(({ onMenuClick }) => {
               {showProfileMenu && (
                 <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-200 z-[9999]" role="menu">
                   <div className="px-4 py-3 border-b border-gray-100">
-                    <p className="text-sm font-medium text-neutral-900" title={user?.name}>{truncate(user?.name, 30)}</p>
+                    <p className="text-sm font-medium text-neutral-900" title={user?.name}>{truncate(user?.name, 15)}</p>
                     <p className="text-xs text-neutral-500 mt-0.5">{user?.email}</p>
                     {user?.role && (
                       <span className="inline-block mt-1.5 px-2 py-0.5 bg-neutral-100 text-neutral-700 text-xs font-medium rounded-full">
@@ -216,7 +216,7 @@ const Navbar = memo(({ onMenuClick }) => {
                       role="menuitem"
                     >
                       <HiLogout className="w-4 h-4" aria-hidden="true" />
-                      Logout
+                      Keluar
                     </button>
                   </div>
                 </div>
@@ -231,7 +231,7 @@ const Navbar = memo(({ onMenuClick }) => {
         <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/40">
           <div className="relative w-full max-w-md max-h-[85vh] bg-white rounded-xl shadow-xl border border-gray-200 flex flex-col">
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 shrink-0">
-              <h3 className="font-semibold text-neutral-900">View All Notification</h3>
+              <h3 className="font-semibold text-neutral-900">Lihat Semua Notifikasi</h3>
               <button
                 type="button"
                 onClick={handleCloseViewAll}
